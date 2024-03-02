@@ -103,6 +103,7 @@ def register_routes(module_name, prefix=""):
             for _, obj in inspect.getmembers(importlib.import_module(sub_name)):
                 if inspect.isclass(obj) and issubclass(obj, HTTPMethodView) and obj != HTTPMethodView:
                     app.add_route(obj.as_view(), f'{CONST.URL_PREFIX}/{prefix}/{camel2snake(_)}')
+                    logger.info(f"register_route: {CONST.URL_PREFIX}/{prefix}/{camel2snake(_)}")
 
 
 def run_web_service():
