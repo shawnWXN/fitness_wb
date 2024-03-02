@@ -1,12 +1,9 @@
-import pyfiglet
-from dotenv import load_dotenv
-
-load_dotenv()
 import importlib
 import inspect
 import pkgutil
 import re
 
+import pyfiglet
 from sanic import Sanic
 from sanic.handlers import ErrorHandler
 from sanic.views import HTTPMethodView
