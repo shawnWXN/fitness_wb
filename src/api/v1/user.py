@@ -7,6 +7,7 @@ from aiohttp import ClientSession
 from common.const import CONST
 from infra.utils import resp_success, resp_failure
 from orm.user_orm import find_users, create_user, modify_user
+from loggers.logger import logger
 
 
 class Users(HTTPMethodView):
@@ -50,6 +51,7 @@ class UserPhone(HTTPMethodView):
     async def post(request):
 
         x_wx_openid = request.headers.get('x-wx-openid')
+        logger.info(f"headers: {request.headers}")
         api = f"http://api.weixin.qq.com/wxa/getopendata?openid={x_wx_openid}"
         cloudid = request.json.get("cloudid")
 
@@ -63,4 +65,4 @@ class UserPhone(HTTPMethodView):
                     phone_number = phone_info['phoneNumber']
                     return resp_success({"phone": phone_number})
                 except Exception as e:
-                    return resp_failure({"error": "get phone failed"}, status=500)
+                    return resp_failure(500, f'get phone failed, {str(e)}')

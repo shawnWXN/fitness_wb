@@ -16,7 +16,7 @@ class _SETTING:
         self.LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
         self.RETENTION = os.environ.get("RETENTION", "14 days")
         for k, v in os.environ.items():
-            logger.error(f'{k}: {v}')
+            logger.info(f'{k}: {v}')
 
 
 SETTING = _SETTING()
