@@ -61,11 +61,12 @@ class UserPhone(HTTPMethodView):
             async with session.post(api, json={"cloudid_list": [cloudid]},
                                     headers={'Content-Type': 'application/json'}) as resp:
                 try:
-                    logger.info(f"Request[{resp.url}], Response[{resp.status_code}][] ->{resp.text}")
+                    logger.info(f"Request[{resp.url}], Response[{resp.status}] ->{resp.text}")
                     logger.info("Response headers:")
                     for key, value in resp.headers.items():
                         logger.info(f"{key}: {value}")
                     resp_json = await resp.json()
+                    logger.info(f"resp_json: {resp_json}")
                     data = resp_json['data_list'][0]
                     phone_info = json.loads(data['json'])['data']
                     phone_number = phone_info['phoneNumber']
