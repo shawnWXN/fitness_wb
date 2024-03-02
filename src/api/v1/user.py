@@ -52,6 +52,8 @@ class UserPhone(HTTPMethodView):
 
         x_wx_openid = request.headers.get('x-wx-openid')
         logger.info(f"headers: {request.headers}")
+        logger.info(f"x_wx_openid: {x_wx_openid}")
+        logger.info(f"request.json: {x_request.json}")
         api = f"http://api.weixin.qq.com/wxa/getopendata?openid={x_wx_openid}"
         cloudid = request.json.get("cloudid")
 
@@ -59,10 +61,15 @@ class UserPhone(HTTPMethodView):
             async with session.post(api, json={"cloudid_list": [cloudid]},
                                     headers={'Content-Type': 'application/json'}) as resp:
                 try:
+                    logger.info(f"Request[{resp.url}], Response[{resp.status_code}][] ->{resp.text}")
+                    logger.info("Response headers:")
+                    for key, value in resp.headers.items():
+                        logger.info(f"{key}: {value}")
                     resp_json = await resp.json()
                     data = resp_json['data_list'][0]
                     phone_info = json.loads(data['json'])['data']
                     phone_number = phone_info['phoneNumber']
                     return resp_success({"phone": phone_number})
                 except Exception as e:
+                    logger.exception(e)
                     return resp_failure(500, f'get phone failed, {str(e)}')
