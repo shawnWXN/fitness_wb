@@ -53,7 +53,7 @@ class UserPhone(HTTPMethodView):
         x_wx_openid = request.headers.get('x-wx-openid')
         logger.info(f"headers: {request.headers}")
         logger.info(f"x_wx_openid: {x_wx_openid}")
-        logger.info(f"request.json: {x_request.json}")
+        logger.info(f"request.json: {request.json}")
         api = f"http://api.weixin.qq.com/wxa/getopendata?openid={x_wx_openid}"
         cloudid = request.json.get("cloudid")
 
