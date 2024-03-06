@@ -6,12 +6,11 @@ from aiohttp import ClientSession
 
 from common.const import CONST
 from infra.utils import resp_success, resp_failure
-from orm.user_orm import find_users, create_user, modify_user
+from orm.user_orm import find_users, create_user, modify_user, faker_users
 from loggers.logger import logger
 
 
-class Users(HTTPMethodView):
-    sub_url = '/users'
+class User(HTTPMethodView):
 
     @staticmethod
     async def get(request):
@@ -21,8 +20,8 @@ class Users(HTTPMethodView):
         :return:
         """
         # await faker_users()
-        count, rst = await find_users(request)
-        return resp_success({CONST.COUNT: count, CONST.LIST: rst})
+        pagination = await find_users(request)
+        return resp_success(pagination)
 
     @staticmethod
     async def post(request):
@@ -51,9 +50,6 @@ class UserPhone(HTTPMethodView):
     async def post(request):
 
         x_wx_openid = request.headers.get('x-wx-openid')
-        logger.info(f"headers: {request.headers}")
-        logger.info(f"x_wx_openid: {x_wx_openid}")
-        logger.info(f"request.json: {request.json}")
         api = f"http://api.weixin.qq.com/wxa/getopendata?openid={x_wx_openid}"
         cloudid = request.json.get("cloudid")
 
@@ -62,7 +58,6 @@ class UserPhone(HTTPMethodView):
                                     headers={'Content-Type': 'application/json'}) as resp:
                 try:
                     logger.info(f"Request[{resp.url}], Response[{resp.status}] ->{resp.text}")
-                    logger.info("Response headers:")
                     for key, value in resp.headers.items():
                         logger.info(f"{key}: {value}")
                     resp_json = await resp.json()

@@ -1,8 +1,12 @@
 # -*- coding:utf-8 -*-
+from functools import reduce
+
 from faker import Faker
 from tortoise.queryset import Q
 
+from api import paging
 from common.const import CONST
+from common.enum import StaffRoleEnum, GenderEnum
 from loggers.logger import logger
 from orm.model import User
 
@@ -18,13 +22,16 @@ async def demo_asp(arg):
 
 
 async def faker_users():
-    count = fake.random_int(1, 50)
-    roles = [1, 10]
-    pwd = "112233"
+    count = fake.random_int(1, 15)
     for _ in range(count):
+
         prefix = fake.uuid4().split('-')[0]
-        await User.create(nick_name=fake.name(), user_name=f"{prefix}{fake.email()}", passwd='fasd',
-                          role=fake.random_choices(roles, length=1)[0])
+        if _ % 3 == 0:
+            await User.create(openid=prefix, staff_roles=[StaffRoleEnum.ADMIN.value, StaffRoleEnum.COACH.value])
+        elif _ % 2 == 0:
+            await User.create(openid=prefix, gender=GenderEnum.MALE.value)
+        else:
+            await User.create(openid=prefix)
 
 
 async def create_user(request, user: dict):
@@ -131,45 +138,43 @@ async def modify_user(request, user: dict):
         return is_success, reason
 
 
-async def find_users(request) -> tuple:
+async def find_users(request) -> dict:
     """
     users列表
-    :param session:
-    :param user:
-    :return:
     """
-    search = request.args.get(CONST.SEARCH)
-    u_id = request.args.get(CONST.ID)
-    page_size = request.args.get(CONST.PAGE_SIZE)
-    page_num = request.args.get(CONST.PAGE_NUM)
 
-    back_list = list()
-    query = User.filter(is_active=CONST.TRUE_STATUS)
-
-    if u_id and u_id.isdigit():
-        query = query.filter(id=int(u_id))
-
+    search: str = request.args.get(CONST.SEARCH)
+    staff_roles: str = request.args.get(CONST.STAFF_ROLES)
+    # u_id = request.args.get(CONST.ID)
+    # page_size = request.args.get(CONST.PAGE_SIZE)
+    # page_num = request.args.get(CONST.PAGE_NUM)
+    query = User.filter()
     if search:
-        query = query.filter(Q(nick_name__icontains=search) | Q(user_name__icontains=search))
+        if search.isdigit():
+            query = query.filter(Q(phone__icontains=search))
+        else:
+            query = query.filter(Q(nickname__icontains=search))
+    if staff_roles:
+        query = query.filter(reduce(lambda x, y: x | y, [Q(staff_roles__contains=[int(role)]) for role in staff_roles.split(',')]))
+        # query = query.filter(Q(staff_roles__contains=[10]) | Q(staff_roles__contains=[20]))
+    return await paging(request, query)
 
-    if page_size and page_size.isdigit():
-        page_size = int(page_size)
-        page_size = page_size if page_size <= 50 else 50
-    else:
-        page_size = 10
-    if page_num and page_num.isdigit():
-        page_num = int(page_num) or 1
-    else:
-        page_num = 1
-    offset = page_size * (page_num - 1)
+    # if u_id and u_id.isdigit():
+    #     query = query.filter(id=int(u_id))
+    #
 
-    count = await query.count()
-    objs = await query.order_by('id').offset(offset).limit(page_size)
+    #
+    # if page_size and page_size.isdigit():
+    #     page_size = int(page_size)
+    #     page_size = page_size if page_size <= 50 else 50
+    # else:
+    #     page_size = 10
+    # if page_num and page_num.isdigit():
+    #     page_num = int(page_num) or 1
+    # else:
+    #     page_num = 1
+    # offset = page_size * (page_num - 1)
 
-    for obj in objs:
-        back_list.append(obj.to_dict())
-
-    return count, back_list
 
 
 async def valid_id_un_role(user_id: int, un: str, role: int) -> dict:

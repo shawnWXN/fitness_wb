@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-from enum import IntEnum
 from datetime import datetime
 
 from tortoise.models import Model
@@ -15,7 +14,7 @@ class BaseModel(Model):
         abstract = True
 
     id = fields.IntField(pk=True)
-    is_active = fields.CharField(100, default=CONST.TRUE_STATUS)
+    # is_active = fields.CharField(100, default=CONST.TRUE_STATUS)
     create_time = fields.DatetimeField(auto_now_add=True)
     update_time = fields.DatetimeField(auto_now=True)
 
@@ -35,28 +34,17 @@ class User(BaseModel):
     class Meta:
         table = "user"
 
-    class RoleEnum(IntEnum):
-        ADMIN = 1
-        STAFF = 10
-
-    nick_name = fields.CharField(100)
-    user_name = fields.CharField(100)
-    passwd = fields.CharField(100)
-    role = fields.IntEnumField(RoleEnum)
-
-    def to_dict(self, *field):
-        d = dict()
-        for c in field or self._meta.fields:
-            attr_name = c if isinstance(c, str) else c.name
-            value = getattr(self, attr_name)
-            if isinstance(value, datetime):
-                value = get_date_time_str(value)
-            # 去掉密码响应
-            if attr_name == CONST.PASSWD:
-                continue
-
-            d[attr_name] = value
-        return d
+    openid = fields.CharField(max_length=255, unique=True, description="小程序openid")
+    phone = fields.CharField(max_length=20, null=True, description="手机号")
+    nickname = fields.CharField(max_length=50, null=True, description="微信昵称")
+    gender = fields.CharField(max_length=1, null=True, description="性别", choices=[
+        ("0", "未知"),
+        ("1", "男性"),
+        ("2", "女性"),
+    ])
+    avatar = fields.CharField(max_length=255, null=True, description="头像")
+    staff_roles = fields.JSONField(description="账号权限列表", default=[])
+    comments = fields.JSONField(description="备注", default=[])
 
 
 class Customer(BaseModel):

@@ -12,7 +12,6 @@ from tortoise.contrib.sanic import register_tortoise
 from common.const import CONST
 from infra.utils import resp_failure, camel2snake
 from loggers.logger import logger
-from orm.user_orm import valid_id_un_role
 from scheduler.core import aps
 from settings.setting import SETTING
 
@@ -27,60 +26,37 @@ class GlobalErrorHandler(ErrorHandler):
         return super().default(request, exception)
 
 
-# @app.middleware("request")
+@app.middleware("request")
 async def before_request(request):
-    if CONST.URL_PREFIX not in request.path:
-        return
-
-    # 心跳接口或未知接口，都跳出请求拦截器
-    if request.path.endswith("alive") or request.path.endswith("metrics") or request.path.endswith(
-            "captcha") or not request.route:
-        return
-
     try:
         if "multipart/form-data" in request.headers.get('content-type'):
             body = "`multipart/form-data`"
         else:
             body = request.body.decode()
-    except Exception:
+    except Exception:  # noqa
         body = request.body
-    log_msg = f"{request.method} {request.path}, ip: {request.remote_addr}, args: {request.args}, body: {body}"
 
-    # 登录接口不校验session_id
-    if request.path.endswith("login"):
-        logger.info(log_msg)
+    headers = []
+    for header, value in request.headers.items():
+        headers.append(f"{header}={value}")
+
+    log_msg = f"{request.method} {request.path}, headers:{';'.join(headers)}, args:{request.args}, body:{body}"
+    if not request.route:
+        logger.warning(log_msg)
         return
-
-    # 先查缓存
-    k = f"{CONST.SYSTEM_SESSIONS_PREFIX}:{request.cookies.get(CONST.SESSION_ID, '')}"
-    is_success, user = await get_from_redis(k, True)
-    if not is_success:
-        logger.warning(f"not found session from redis key={k}")
-        return resp_failure(CONST.AUTH_INVALID_CODE, CONST.AUTH_INVALID_MSG, print_log=False)
-
-    # 再查db
-    user_id, user_name, user_role = user.get(CONST.ID), user.get(CONST.USER_NAME), user.get(CONST.ROLE)
-
-    user = await valid_id_un_role(user_id, user_name, user_role)
-    if not user:
-        logger.warning(f"not found user[id={user_id}, user_name={user_name}] from db")
-        return resp_failure(CONST.AUTH_INVALID_CODE, CONST.AUTH_INVALID_MSG, print_log=False)
 
     # PUT 和 POST都要带请求体
-    if request.method.upper() in ('POST', 'PUT') and not request.body:
-        logger.warning(f"request.body is none when request.method = {request.method}")
-        return resp_failure(CONST.BODY_NONE_CODE, CONST.BODY_NONE_MSG, print_log=False)
+    # if request.method.upper() in ('POST', 'PUT') and not request.body:
+    #     logger.warning(f"request.body is none when request.method = {request.method}")
+    #     return resp_failure(CONST.BODY_NONE_CODE, CONST.BODY_NONE_MSG, print_log=False)
 
-    log_msg += f", user: {user}, session: {request.cookies.get(CONST.SESSION_ID, '')}"
     logger.info(log_msg)
 
-    request.ctx.user = user
 
-
-@app.middleware("response")
-async def jsonify(request, response):
-    if CONST.URL_PREFIX not in request.path:
-        return
+# @app.middleware("response")
+# async def jsonify(request, response):
+#     if CONST.URL_PREFIX not in request.path:
+#         return
 
 
 @app.listener("before_server_start")
@@ -103,7 +79,7 @@ def register_routes(module_name, prefix=""):
             for _, obj in inspect.getmembers(importlib.import_module(sub_name)):
                 if inspect.isclass(obj) and issubclass(obj, HTTPMethodView) and obj != HTTPMethodView:
                     app.add_route(obj.as_view(), f'{CONST.URL_PREFIX}/{prefix}/{camel2snake(_)}')
-                    logger.info(f"register_route: {CONST.URL_PREFIX}/{prefix}/{camel2snake(_)}")
+                    logger.info(f"endpoint: {CONST.URL_PREFIX}/{prefix}/{camel2snake(_)}")
 
 
 def run_web_service():
@@ -145,7 +121,7 @@ def run_web_service():
         },
         'timezone': 'Asia/Shanghai'  # 默认是UTC
     }
-    register_tortoise(app, config=tortoise_config, generate_schemas=True)
+    register_tortoise(app, config=tortoise_config, generate_schemas=False)
 
 
 run_web_service()

@@ -13,7 +13,7 @@ from settings.setting import SETTING
 def resp_success(resp_data: dict = None, **kwargs):
     resp_data = resp_data or {}
     result = {
-        CONST.RESULT: CONST.SUCCESS.lower()
+        CONST.MESSAGE: CONST.SUCCESS.lower()
     }
     result.update(resp_data)
     result.update(kwargs)
@@ -23,7 +23,7 @@ def resp_success(resp_data: dict = None, **kwargs):
 def resp_failure(error_code, reason, resp_data: dict = None, print_log: bool = True, **kwargs):
     resp_data = resp_data or {}
     result = {
-        CONST.RESULT: CONST.FAILURE.lower(),
+        CONST.MESSAGE: CONST.FAILURE.lower(),
         CONST.ERROR_CODE: error_code,
         CONST.REASON: reason
     }

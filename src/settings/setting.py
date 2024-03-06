@@ -2,21 +2,18 @@
 import os
 from dataclasses import dataclass
 
-from loggers.logger import logger
-
 
 @dataclass
 class _SETTING:
-    MYSQL_URI: str
-    LOG_LEVEL: str
-    RETENTION: str
+    MYSQL_URI: str = 'mysql://root:wang2702@120.78.190.176:28060/fitness_db'
+    LOG_LEVEL: str = 'INFO'
+    RETENTION: str = '14 days'
 
     def __init__(self):
-        self.MYSQL_URI = os.environ.get("MYSQL_URI", "localhost")
-        self.LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-        self.RETENTION = os.environ.get("RETENTION", "14 days")
-        for k, v in os.environ.items():
-            logger.info(f'{k}: {v}')
+        for attr, default_value in self.__class__.__dict__.items():
+            if not attr.startswith('__') and not callable(getattr(self, attr)):
+                env_value = os.environ.get(attr, default_value)
+                setattr(self, attr, env_value)
 
 
 SETTING = _SETTING()

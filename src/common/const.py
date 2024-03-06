@@ -27,7 +27,7 @@ class _Const(object):
 
     TOKEN = 'token'
 
-    RESULT = 'result'
+    MESSAGE = 'message'
     SUCCESS = 'success'
     FAILURE = 'failure'
     ERROR_CODE = 'error_code'
@@ -99,6 +99,7 @@ class _Const(object):
     DEL = 'del'
     SEAS_OP_ENUM = [ALLOT, BACK, DEL]
     SEARCH = 'search'
+    STAFF_ROLES = 'staff_roles'
     PAGE_SIZE = 'page_size'
     PAGE_NUM = 'page_num'
 
