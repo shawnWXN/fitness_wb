@@ -48,13 +48,18 @@ class _Const(object):
     ARRAY = 'array'
     NULL = 'null'
 
+    SCHEMA_CONST = 'const'
     REQUIRED = 'required'
+    TITLE = 'title'
     DESCRIPTION = 'description'
     ADDITIONAL_PROPERTIES = 'additionalProperties'
+    MAX_PROPERTIES = 'maxProperties'
+    MIN_PROPERTIES = 'minProperties'
     PROPERTIES = 'properties'
     ENUM = 'enum'
     ITEMS = 'items'
     MINITEMS = 'minItems'
+    MAXITEMS = 'maxItems'
     PATTERN = 'pattern'
     MINIMUM = 'minimum'
     MAXIMUM = 'maximum'
@@ -63,6 +68,18 @@ class _Const(object):
     MAX_LENGTH = 'maxLength'
     DESC = "desc"
     ASC = "asc"
+    ALLOF = 'allOf'
+    ANYOF = 'anyOf'
+    ONEOF = 'oneOf'
+    EXCLUSIVE_MINIMUM = "exclusiveMinimum"
+    EXCLUSIVE_MAXIMUM = "exclusiveMaximum"
+    ERR_MSG = 'err_msg'
+
+    COACH_ID = 'coach_id'
+    COACH_NAME = 'coach_name'
+    BILL_TYPE = 'bill_type'
+    LIMIT_DAYS = 'limit_days'
+    LIMIT_COUNTS = 'limit_counts'
 
     DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
     DATE_FORMAT = '%Y-%m-%d'
@@ -83,6 +100,7 @@ class _Const(object):
     SESSION_ID = "session_id"
 
     ID = "id"
+    COURSE_ID = "course_id"
 
     ROLE = "role"
 

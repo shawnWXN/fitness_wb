@@ -12,6 +12,7 @@ from tortoise.contrib.sanic import register_tortoise
 from common.const import CONST
 from infra.utils import resp_failure, camel2snake
 from loggers.logger import logger
+from orm.model import UserModel
 from scheduler.core import aps
 from settings.setting import SETTING
 
@@ -19,11 +20,16 @@ app = Sanic(CONST.SYSTEM_APP_NAME)
 
 
 class GlobalErrorHandler(ErrorHandler):
-    def default(self, request, exception):
-        ''' handles errors that have no error handlers assigned '''
-        logger.exception(f"global error handler: {str(exception)}")
+    def default(self, request, exc):
+        """
+        handles errors that have no error handlers assigned
+        """
+        logger.exception(f"GlobalErrorHandler: {str(exc)}")
+        if isinstance(exc, AssertionError) and "not found" in exc.args[-1]:
+            return resp_failure(404, "记录不存在")
+
         # You custom error handling logic...
-        return super().default(request, exception)
+        return super().default(request, exc)
 
 
 @app.middleware("request")
@@ -42,21 +48,16 @@ async def before_request(request):
 
     log_msg = f"{request.method} {request.path}, headers:{';'.join(headers)}, args:{request.args}, body:{body}"
     if not request.route:
-        logger.warning(log_msg)
+        logger.warning(log_msg)  # 404时，return后将直接到ErrorHandler
         return
 
-    # PUT 和 POST都要带请求体
-    # if request.method.upper() in ('POST', 'PUT') and not request.body:
-    #     logger.warning(f"request.body is none when request.method = {request.method}")
-    #     return resp_failure(CONST.BODY_NONE_CODE, CONST.BODY_NONE_MSG, print_log=False)
+    # 获取x-wx-openid
+    openid = request.headers.get('x-wx-openid') or None
+    if not openid:
+        return resp_failure(400, 'miss `x-wx-openid` in header.')
 
+    request.ctx.user, _ = await UserModel.get_or_create(openid=openid)
     logger.info(log_msg)
-
-
-# @app.middleware("response")
-# async def jsonify(request, response):
-#     if CONST.URL_PREFIX not in request.path:
-#         return
 
 
 @app.listener("before_server_start")
@@ -94,7 +95,6 @@ def run_web_service():
     }
     app.config.update(options)
     app.error_handler = GlobalErrorHandler()
-    # init_route(app)
     register_routes('api')
 
     pattern = r"(?P<dialect>\w+)://(?P<user>\w+):(?P<password>\w+)@(?P<host>[\d.]+):(?P<port>\d+)/(?P<db>\w+)"
@@ -121,7 +121,7 @@ def run_web_service():
         },
         'timezone': 'Asia/Shanghai'  # 默认是UTC
     }
-    register_tortoise(app, config=tortoise_config, generate_schemas=False)
+    register_tortoise(app, config=tortoise_config, generate_schemas=True)
 
 
 run_web_service()

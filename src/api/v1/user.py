@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 import json
 
 from sanic.views import HTTPMethodView
@@ -6,8 +5,11 @@ from aiohttp import ClientSession
 
 from common.const import CONST
 from infra.utils import resp_success, resp_failure
-from orm.user_orm import find_users, create_user, modify_user, faker_users
+from orm.model import UserModel
+from orm.user_orm import find_users
 from loggers.logger import logger
+
+from service.validate_service import validate_userprofile_update_data
 
 
 class User(HTTPMethodView):
@@ -23,26 +25,33 @@ class User(HTTPMethodView):
         pagination = await find_users(request)
         return resp_success(pagination)
 
+
+class UserProfile(HTTPMethodView):
     @staticmethod
-    async def post(request):
+    async def get(request):
         """
-        新增user，仅限管理员
+        查看profile
         :param request:
         :return:
         """
-        is_success, passwd_or_reason = await create_user(request, request.ctx.user)
-        return resp_success({CONST.TOKEN: passwd_or_reason}) if is_success else resp_failure(
-            CONST.OPERATION_FAILURE_CODE, passwd_or_reason)
+        return resp_success(data=request.ctx.user.to_dict())
 
     @staticmethod
     async def put(request):
         """
-        编辑（删除）user信息
+        更新profile：手机，昵称，头像，性别
         :param request:
         :return:
         """
-        is_success, reason = await modify_user(request, request.ctx.user)
-        return resp_success() if is_success else resp_failure(CONST.OPERATION_FAILURE_CODE, reason)
+        data = request.json or dict()
+        rst, err_msg = validate_userprofile_update_data(data)
+        if not rst:
+            return resp_failure(400, err_msg)
+
+        data.update({CONST.ID: request.ctx.user.id})
+        user = await UserModel.update_one(data)
+        request.ctx.user = user
+        return resp_success()
 
 
 class UserPhone(HTTPMethodView):

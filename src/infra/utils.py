@@ -20,18 +20,16 @@ def resp_success(resp_data: dict = None, **kwargs):
     return sanic_json(result)
 
 
-def resp_failure(error_code, reason, resp_data: dict = None, print_log: bool = True, **kwargs):
+def resp_failure(status_code, reason, resp_data: dict = None, print_log: bool = True, **kwargs):
     resp_data = resp_data or {}
     result = {
-        CONST.MESSAGE: CONST.FAILURE.lower(),
-        CONST.ERROR_CODE: error_code,
-        CONST.REASON: reason
+        CONST.MESSAGE: reason
     }
     result.update(resp_data)
     result.update(kwargs)
     if print_log:
-        logger.error(result)
-    return sanic_json(result)
+        logger.error(f'{result}, {status_code}')
+    return sanic_json(result, status=status_code)
 
 
 def number_of_workers():

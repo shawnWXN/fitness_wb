@@ -1,7 +1,10 @@
+from functools import wraps
+
 from sanic.request import Request
 from tortoise.queryset import QuerySet
 
 from common.const import CONST
+from infra.utils import resp_failure
 
 
 async def paging(request: Request, query: QuerySet) -> dict:
@@ -25,6 +28,48 @@ async def paging(request: Request, query: QuerySet) -> dict:
         'total': count,
         'page': page_num if count else 0,
         'size': len(items),
-        'pages': (1 if count else 0) if count <= page_size else (count // page_size if count % page_size else count // page_size + 1),
+        'pages': (1 if count else 0) if count <= page_size else (
+            count // page_size if count % page_size else count // page_size + 1),
         'items': items
     }
+
+
+def check_staff(allowed_roles):
+    def decorator(f):
+        @wraps(f)
+        async def decorated_function(request, *args, **kwargs):
+            # 假设request.ctx.user是一个用户对象，保护phone属性
+            user_phone = getattr(request.ctx.user, 'phone')
+            # 检查用户是否有手机号
+            if user_phone:
+                # 假设request.ctx.user是一个用户对象，包含staff_roles属性
+                user_roles = getattr(request.ctx.user, 'staff_roles', [])
+                # 检查用户是否有允许的角色
+                if any(role in allowed_roles for role in user_roles):
+                    # 如果用户有权限，继续执行视图函数
+                    return await f(request, *args, **kwargs)
+                else:
+                    # 如果用户没有权限，返回403禁止访问
+                    return resp_failure(403, "Forbidden")
+            else:
+                # 返回401未经授权
+                return resp_failure(401, "Unauthorized")
+
+        return decorated_function
+
+    return decorator
+
+
+def check_authorized(f):
+    async def decorated_function(request, *args, **kwargs):
+        # 假设request.ctx.user是一个用户对象，保护phone属性
+        user_phone = getattr(request.ctx.user, 'phone')
+        # 检查用户是否有手机号
+        if user_phone:
+            # 继续执行视图函数
+            return await f(request, *args, **kwargs)
+        else:
+            # 返回401未经授权
+            return resp_failure(401, "Unauthorized")
+
+    return decorated_function
