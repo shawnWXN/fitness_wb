@@ -1,6 +1,6 @@
 from sanic.views import HTTPMethodView
 
-from api import check_staff, check_authorized
+from api import check_staff, check_member
 from common.const import CONST
 from common.enum import StaffRoleEnum, BillTypeEnum
 from infra.utils import resp_failure, resp_success
@@ -73,7 +73,7 @@ class Course(HTTPMethodView):
 
 class CourseConsult(HTTPMethodView):
     @staticmethod
-    @check_authorized
+    @check_member(exclude_staff=True)
     async def get(request):
         """
         咨询更多

@@ -25,9 +25,11 @@ class GlobalErrorHandler(ErrorHandler):
         handles errors that have no error handlers assigned
         """
         logger.exception(f"GlobalErrorHandler: {str(exc)}")
-        if isinstance(exc, AssertionError) and "not found" in exc.args[-1]:
-            return resp_failure(404, "记录不存在")
-
+        if isinstance(exc, AssertionError):
+            if "not found" in exc.args[-1]:
+                return resp_failure(404, "记录不存在")
+            if "no access" in exc.args[-1]:
+                return resp_failure(403, "记录访问受限")
         # You custom error handling logic...
         return super().default(request, exc)
 

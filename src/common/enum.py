@@ -32,3 +32,19 @@ class BillTypeEnum(Enum):
         DAY: "计时",
         COUNT: "计次"
     }
+
+
+class OrderStatusEnum(Enum):
+    PENDING = "pending"
+    REJECT = "reject"
+    ACTIVATED = "activated"
+    EXPIRED = "expired"
+    REFUND = "refund"
+
+    explain = {
+        PENDING: "待审核",
+        REJECT: "审核拒绝",
+        ACTIVATED: "审核通过",
+        EXPIRED: "已过期",
+        REFUND: "已退款"
+    }

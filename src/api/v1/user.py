@@ -21,6 +21,7 @@ class User(HTTPMethodView):
         :param request:
         :return:
         """
+        # TODO 取消教练，对应课程也删除 + 提醒管理员或店主去修改在期订单的归属教练
         # await faker_users()
         pagination = await find_users(request)
         return resp_success(pagination)
@@ -52,29 +53,3 @@ class UserProfile(HTTPMethodView):
         user = await UserModel.update_one(data)
         request.ctx.user = user
         return resp_success()
-
-
-class UserPhone(HTTPMethodView):
-    @staticmethod
-    async def post(request):
-
-        x_wx_openid = request.headers.get('x-wx-openid')
-        api = f"http://api.weixin.qq.com/wxa/getopendata?openid={x_wx_openid}"
-        cloudid = request.json.get("cloudid")
-
-        async with ClientSession() as session:
-            async with session.post(api, json={"cloudid_list": [cloudid]},
-                                    headers={'Content-Type': 'application/json'}) as resp:
-                try:
-                    logger.info(f"Request[{resp.url}], Response[{resp.status}] ->{resp.text}")
-                    for key, value in resp.headers.items():
-                        logger.info(f"{key}: {value}")
-                    resp_json = await resp.json()
-                    logger.info(f"resp_json: {resp_json}")
-                    data = resp_json['data_list'][0]
-                    phone_info = json.loads(data['json'])['data']
-                    phone_number = phone_info['phoneNumber']
-                    return resp_success({"phone": phone_number})
-                except Exception as e:
-                    logger.exception(e)
-                    return resp_failure(500, f'get phone failed, {str(e)}')

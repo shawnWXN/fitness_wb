@@ -1,12 +1,12 @@
 import typing
 from datetime import datetime
-
+from uuid import uuid4
 from tortoise.models import Model
 from tortoise import fields
 from enum import Enum
 
 from common.const import CONST
-from common.enum import GenderEnum, BillTypeEnum
+from common.enum import GenderEnum, BillTypeEnum, OrderStatusEnum
 from infra.date_utils import get_date_time_str
 
 
@@ -82,5 +82,26 @@ class CourseModel(BaseModel):
     description = fields.TextField(null=True, description="课程详细文字")
     desc_images = fields.JSONField(description="课程详细图片", default=[])  # JSON field to store list of images
     bill_type = fields.CharEnumField(BillTypeEnum, description="计费类型")
-    limit_days = fields.IntField(null=True, ge=1, le=999, description="有效天数")
-    limit_counts = fields.IntField(null=True, ge=1, le=999, description="有效次数")
+    limit_days = fields.IntField(description="有效天数")
+    limit_counts = fields.IntField(description="有效次数")
+
+
+class OrderModel(BaseModel):
+    class Meta:
+        table = "order"
+
+    member_id = fields.IntField(description="会员编号ID")
+    member_name = fields.CharField(max_length=255, description="会员名")
+    coach_id = fields.IntField(description="教练编号ID")
+    coach_name = fields.CharField(max_length=255, description="教练名")
+    course_id = fields.IntField(description="课程编号ID")
+    course_name = fields.CharField(max_length=255, description="课程名")
+    bill_type = fields.CharEnumField(BillTypeEnum, description="计费类型")
+    limit_days = fields.IntField(description="有效天数")
+    limit_counts = fields.IntField(description="有效次数")
+    receipt = fields.CharField(max_length=255, description="付款截图")
+    contract = fields.CharField(null=True, max_length=255, description="合同文件")
+    surplus_counts = fields.IntField(description="剩余次数")
+    status = fields.CharEnumField(OrderStatusEnum, description="订单状态", default=OrderStatusEnum.PENDING.value)
+    order_no = fields.CharField(unique=True, max_length=255, description="订单编号", default=uuid4().hex)
+    comments = fields.JSONField(description="备注", default=[])

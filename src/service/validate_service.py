@@ -107,6 +107,58 @@ course_create_schema = {
     ]
 }
 
+order_create_schema = {
+    "type": "object",
+    "properties": {
+        "course_id": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "课程ID"
+        },
+        "amount": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "订单金额",
+            "description": "RMB",
+        },
+        "receipt": {
+            "type": "string",
+            "title": "付款截图",
+            "minLength": 1
+        },
+        "contract": {
+            "type": ["string", "null"],
+            "title": "合同文件",
+            "minLength": 1
+        }
+    },
+    "required": [
+        "course_id",
+        "amount",
+        "receipt",
+    ]
+}
+
+order_comment_create_schema = {
+    "type": "object",
+    "properties": {
+        "order_id": {
+            "type": "integer",
+            "title": "订单ID编号",
+            "minimum": 1,
+        },
+        "comment": {
+            "type": "string",
+            "title": "备注内容",
+            "minLength": 1
+        }
+    },
+    "required": [
+        "order_id",
+        "comment"
+    ]
+}
+
 
 def validate_userprofile_update_data(data: dict) -> typing.Tuple[bool, str]:
     return __validate_data(data, userprofile_update_schema)
@@ -148,6 +200,14 @@ def validate_course_update_data(data: dict) -> typing.Tuple[bool, str]:
     return True, ''
 
 
+def validate_order_create_data(data: dict) -> typing.Tuple[bool, str]:
+    return __validate_data(data, order_create_schema)
+
+
+def validate_order_comment_create_data(data: dict) -> typing.Tuple[bool, str]:
+    return __validate_data(data, order_comment_create_schema)
+
+
 def __parse_error_msg(e: ValidationError, schema: dict):
     if e.absolute_schema_path.count(CONST.ANYOF) or e.absolute_schema_path.count(
             CONST.ONEOF) or e.absolute_schema_path.count(CONST.ALLOF):
@@ -172,7 +232,7 @@ def __parse_error_msg(e: ValidationError, schema: dict):
             err_msg = err_msg if err_msg.startswith(description) else f'`{description}`{err_msg}'
         else:
             if e.validator == CONST.REQUIRED:
-                err_msg = f"`{description}` 缺少必要参数"
+                err_msg = f"`{description}` 缺少必要参数" if description else "缺少必要参数"
             elif e.validator == CONST.ADDITIONAL_PROPERTIES:
                 err_msg = f"`{description}` 含有非法参数"
             elif e.validator in (CONST.MAX_PROPERTIES, CONST.MIN_PROPERTIES):

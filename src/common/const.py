@@ -101,6 +101,15 @@ class _Const(object):
 
     ID = "id"
     COURSE_ID = "course_id"
+    COURSE_NAME = "course_name"
+
+    MEMBER_ID = "member_id"
+    MEMBER_NAME = "member_name"
+
+    SURPLUS_COUNTS = 'surplus_counts'
+    COMMENTS = 'comments'
+    COMMENT = 'comment'
+    ORDER_ID = 'order_id'
 
     ROLE = "role"
 

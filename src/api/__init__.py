@@ -38,7 +38,7 @@ def check_staff(allowed_roles):
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
-            # 假设request.ctx.user是一个用户对象，保护phone属性
+            # 假设request.ctx.user是一个用户对象，包含phone属性
             user_phone = getattr(request.ctx.user, 'phone')
             # 检查用户是否有手机号
             if user_phone:
@@ -60,16 +60,41 @@ def check_staff(allowed_roles):
     return decorator
 
 
-def check_authorized(f):
-    async def decorated_function(request, *args, **kwargs):
-        # 假设request.ctx.user是一个用户对象，保护phone属性
-        user_phone = getattr(request.ctx.user, 'phone')
-        # 检查用户是否有手机号
-        if user_phone:
-            # 继续执行视图函数
-            return await f(request, *args, **kwargs)
-        else:
-            # 返回401未经授权
-            return resp_failure(401, "Unauthorized")
+# def check_authorized_member(f):
+#     async def decorated_function(request, *args, **kwargs):
+#         # 假设request.ctx.user是一个用户对象，包含phone属性
+#         user_phone = getattr(request.ctx.user, 'phone')
+#         # 检查用户是否有手机号
+#         if user_phone:
+#             # 继续执行视图函数
+#             return await f(request, *args, **kwargs)
+#         else:
+#             # 返回401未经授权
+#             return resp_failure(401, "Unauthorized")
+#
+#     return decorated_function
 
-    return decorated_function
+
+def check_member(exclude_staff: bool = False):
+    def decorator(f):
+        @wraps(f)
+        async def decorated_function(request, *args, **kwargs):
+            # 假设request.ctx.user是一个用户对象，包含phone属性
+            user_phone = getattr(request.ctx.user, 'phone')
+            # 检查用户是否有手机号
+            if user_phone:
+                if not exclude_staff:
+                    return await f(request, *args, **kwargs)
+                else:
+                    user_roles = getattr(request.ctx.user, 'staff_roles', [])
+                    if not user_roles:
+                        return await f(request, *args, **kwargs)
+                    else:
+                        return resp_failure(403, "Forbidden")
+            else:
+                # 返回401未经授权
+                return resp_failure(401, "Unauthorized")
+
+        return decorated_function
+
+    return decorator
