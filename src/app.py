@@ -38,7 +38,7 @@ async def before_request(request):
         if "multipart/form-data" in request.headers.get('content-type'):
             body = "`multipart/form-data`"
         else:
-            body = request.body.decode()
+            body = request.json
     except Exception:  # noqa
         body = request.body
 
@@ -46,7 +46,7 @@ async def before_request(request):
     for header, value in request.headers.items():
         headers.append(f"{header}={value}")
 
-    log_msg = f"{request.method} {request.path}, headers:{';'.join(headers)}, args:{request.args}, body:{body}"
+    log_msg = f"{request.method} {request.path}, openid:{request.headers.get('x-wx-openid')}, args:{request.args}, body:{body}"
     if not request.route:
         logger.warning(log_msg)  # 404时，return后将直接到ErrorHandler
         return
@@ -54,7 +54,7 @@ async def before_request(request):
     # 获取x-wx-openid
     openid = request.headers.get('x-wx-openid') or None
     if not openid:
-        return resp_failure(400, 'miss `x-wx-openid` in header.')
+        return resp_failure(400, 'miss `x-wx-openid` in headers.')
 
     request.ctx.user, _ = await UserModel.get_or_create(openid=openid)
     logger.info(log_msg)

@@ -94,4 +94,4 @@ def init_other_logger(log_level, module_name: str):
 
 
 schedule_log = init_other_logger(logging.DEBUG, 'apscheduler')
-db_log = init_other_logger(logging.DEBUG, 'tortoise.db_client')
+# db_log = init_other_logger(logging.DEBUG, 'tortoise.db_client')

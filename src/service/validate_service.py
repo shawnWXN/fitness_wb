@@ -102,7 +102,6 @@ course_create_schema = {
         "name",
         "intro",
         "coach_id",
-        "coach_name",
         "thumbnail",
         "bill_type"
     ]
