@@ -45,7 +45,7 @@ user_update_schema = {
             "title": "ID 编号",
             "minimum": 1
         },
-        "staff_role": {
+        "staff_roles": {
             "type": ["array", "null"],
             "items": {
                 "type": "integer",
@@ -92,14 +92,15 @@ course_create_schema = {
             "minLength": 1
         },
         "desc_images": {
-            "type": "array",
+            "type": ["array", "null"],
             "items": {
                 "type": "string",
                 "minLength": 1
             },
             "title": "课程详细图片",
+            "minItems": 0,
             "maxItems": 3,
-            "minItems": 0
+            "uniqueItems": True
         },
         "bill_type": {
             "type": "string",
