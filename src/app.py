@@ -56,6 +56,7 @@ async def before_request(request):
     openid = request.headers.get(openid_str) or None
     # openid = request.headers.get('x-wx-openid') or None
     if not openid:
+        logger.warning(log_msg)
         return resp_failure(400, f'miss `{openid_str}` in headers.')
 
     request.ctx.user, _ = await UserModel.get_or_create(openid=openid)
