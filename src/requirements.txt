@@ -8,3 +8,4 @@ aiomysql==0.2.0
 aiohttp
 python-dotenv==1.0.1
 pyfiglet==1.0.2
+qrcode==7.4.2

@@ -2,6 +2,9 @@ import hashlib
 import multiprocessing
 import platform
 import re
+import qrcode
+from io import BytesIO
+import base64
 
 from sanic.response import json as sanic_json
 
@@ -76,3 +79,25 @@ def camel2snake(camel: str) -> str:
     snake = re.sub(r"([a-zA-Z])([0-9])", lambda m: f"{m.group(1)}_{m.group(2)}", camel)
     snake = re.sub(r"([a-z0-9])([A-Z])", lambda m: f"{m.group(1)}_{m.group(2)}", snake)
     return snake.lower()
+
+
+def str2base64(s: str) -> str:
+    """
+    生成字符串对应的图片（base64字符串）
+    """
+    qr_img = qrcode.make(s)
+
+    # 创建一个字节流来保存二维码图像
+    byte_io = BytesIO()
+
+    # 保存二维码图像到字节流，格式为PNG
+    qr_img.save(byte_io, 'PNG')
+
+    # 将字节流的内容转换为Base64编码的字符串
+    base64_str = base64.b64encode(byte_io.getvalue()).decode('utf-8')
+
+    # 创建一个完整的Base64编码的图像数据字符串
+    base64_image = 'data:image/png;base64,' + base64_str
+
+    # 打印或返回Base64编码的图像数据字符串
+    return base64_image
