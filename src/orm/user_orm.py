@@ -66,7 +66,7 @@ async def update_user(request):
     current_user_role = max(current_user.staff_roles) if current_user.staff_roles else 0
 
     data = request.json or dict()
-    user: UserModel = await UserModel.get_one(_id=data[CONST.ID])
+    user: UserModel = await UserModel.get_one(id=data[CONST.ID])
     user_role = max(user.staff_roles) if user.staff_roles else 0
 
     assert user_role < current_user_role, f"UserModel[{user.id}] no access for user[{current_user.id}]"

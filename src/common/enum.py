@@ -74,3 +74,24 @@ class OrderStatusEnum(Enum):
         EXPIRED,
         REFUND
     ]
+
+
+class ExpenseStatusEnum(Enum):
+    PENDING = "pending"
+    REJECT = "reject"
+    ACTIVATED = "activated"
+    FREE = "free"
+
+    explain = {
+        PENDING: "待审核",
+        REJECT: "审核拒绝",
+        ACTIVATED: "审核通过",
+        FREE: "赠送"
+    }
+
+    iter = [
+        PENDING,
+        REJECT,
+        ACTIVATED,
+        FREE
+    ]

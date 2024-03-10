@@ -33,11 +33,15 @@ class Course(HTTPMethodView):
         if not rst:
             return resp_failure(400, err_msg)
 
-        rst, data = await prepare_upsert(data)
-        if not rst:
-            return resp_failure(400, data)
+        await prepare_data(data)
 
-        course = await CourseModel.create(**data)
+        # 判断教练ID真实性
+        user: UserModel = await UserModel.get_one(id=data[CONST.COACH_ID])
+        if StaffRoleEnum.COACH.value not in user.staff_roles or not user.nickname:
+            return resp_failure(400, "教练不存在或未设置昵称")
+
+        data[CONST.COACH_NAME] = user.nickname
+        course: CourseModel = await CourseModel.create(**data)
         return resp_success(id=course.id)
 
     @staticmethod
@@ -53,9 +57,16 @@ class Course(HTTPMethodView):
         if not rst:
             return resp_failure(400, err_msg)
 
-        rst, data = await prepare_upsert(data)
-        if not rst:
-            return resp_failure(400, data)
+        await prepare_data(data)
+
+        course: CourseModel = CourseModel.get_one(id=data[CONST.ID])
+        coach_id = data.get(CONST.COACH_ID)
+        # 有更新教练信息
+        if coach_id and course.coach_id != coach_id:
+            # 判断教练ID真实性
+            user: UserModel = await UserModel.get_one(id=coach_id)
+            if StaffRoleEnum.COACH.value not in user.staff_roles or not user.nickname:
+                return resp_failure(400, "教练不存在或未设置昵称")
 
         await CourseModel.update_one(data)
         return resp_success()
@@ -82,12 +93,12 @@ class CourseConsult(HTTPMethodView):
         :return:
         """
         course_id = request.args.get(CONST.COURSE_ID) or 0
-        course = await CourseModel.get_one(_id=course_id)
+        course = await CourseModel.get_one(id=course_id)
         # TODO 发送请求
         return resp_success()
 
 
-async def prepare_upsert(data: dict) -> tuple[bool, str | dict]:
+async def prepare_data(data: dict):
     # 计次卡设置潜在超时（当前默认设置一年）
     # 计时卡设置潜在次数（当前默认每天三次）
     if data.get(CONST.BILL_TYPE) == BillTypeEnum.DAY.value:
@@ -95,10 +106,3 @@ async def prepare_upsert(data: dict) -> tuple[bool, str | dict]:
 
     if data.get(CONST.BILL_TYPE) == BillTypeEnum.COUNT.value:
         data[CONST.LIMIT_DAYS] = 365
-
-    # 判断教练ID真实性
-    user = await UserModel.get_one(_id=data[CONST.COACH_ID])
-    if StaffRoleEnum.COACH.value not in user.staff_roles or not user.nickname:
-        return False, "教练不存在或未设置昵称"
-    data[CONST.COACH_NAME] = user.nickname
-    return True, data

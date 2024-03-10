@@ -4,7 +4,7 @@ import typing
 from jsonschema import validate, ValidationError, SchemaError
 
 from common.const import CONST
-from common.enum import BillTypeEnum, GenderEnum, OrderStatusEnum, StaffRoleEnum
+from common.enum import BillTypeEnum, GenderEnum, OrderStatusEnum, StaffRoleEnum, ExpenseStatusEnum
 from loggers.logger import logger
 
 userprofile_update_schema = {
@@ -195,24 +195,17 @@ order_update_schema_part = {  # 订单更新schema片段
             "minimum": 1,
             "title": "课程ID"
         },
-        "bill_type": {
-            "type": "string",
-            "enum": BillTypeEnum.iter.value,
-            "title": "计费类型"
-        },
-        "limit_days": {
+        "surplus_counts": {
             "type": ["integer", "null"],
             "minimum": 1,
             "maximum": 1000,
             "exclusiveMaximum": 1000,
-            "title": "有效天数"
+            "title": "剩余次数"
         },
-        "limit_counts": {
-            "type": ["integer", "null"],
-            "minimum": 1,
-            "maximum": 1000,
-            "exclusiveMaximum": 1000,
-            "title": "有效次数"
+        "expire_time": {
+            "type": ["string", "null"],
+            "pattern": r"(20[0-9]{2}|2[1-9][0-9]{2})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])",
+            "title": "到期时间"
         },
         "amount": {
             "type": ["integer", "null"],
@@ -236,10 +229,10 @@ order_update_schema_part = {  # 订单更新schema片段
 order_comment_create_schema = {
     "type": "object",
     "properties": {
-        "order_id": {
-            "type": "integer",
-            "title": "订单ID编号",
-            "minimum": 1,
+        "order_no": {
+            "type": "string",
+            "title": "订单编号",
+            "minLength": 1,
         },
         "comment": {
             "type": "string",
@@ -248,8 +241,32 @@ order_comment_create_schema = {
         }
     },
     "required": [
-        "order_id",
+        "order_no",
         "comment"
+    ]
+}
+
+expense_update_schema = {
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "title": "ID 编号",
+            "minimum": 1,
+        },
+        "status": {
+            "type": "string",
+            "title": "状态",
+            "enum": [
+                ExpenseStatusEnum.REJECT.value,
+                ExpenseStatusEnum.ACTIVATED.value,
+                ExpenseStatusEnum.FREE.value
+            ],
+        }
+    },
+    "required": [
+        "id",
+        "status"
     ]
 }
 
@@ -267,6 +284,9 @@ def validate_course_create_data(data: dict) -> typing.Tuple[bool, str]:
     if not rst:
         return rst, err_msg
 
+    if any([data.get('limit_days'), data.get('limit_counts')]) and not data.get('bill_type'):
+        return False, f"miss bill_type when limit_days or limit_counts exists"
+
     if data.get("bill_type") == BillTypeEnum.DAY.value and not data.get('limit_days'):
         return False, f"miss limit_days when bill_type='{BillTypeEnum.DAY.value}'"
 
@@ -283,11 +303,15 @@ def validate_course_update_data(data: dict) -> typing.Tuple[bool, str]:
         "title": "ID 编号",
         "minimum": 1,
     }
-    course_update_schema['required'].append('id')
+    course_update_schema['required'] = ['id']
+    course_update_schema['minProperties'] = 2
     # 下面与新增时一致
     rst, err_msg = __validate_data(data, course_update_schema)
     if not rst:
         return rst, err_msg
+
+    if any([data.get('limit_days'), data.get('limit_counts')]) and not data.get('bill_type'):
+        return False, f"miss bill_type when limit_days or limit_counts exists"
 
     if data.get("bill_type") == BillTypeEnum.DAY.value and not data.get('limit_days'):
         return False, f"miss limit_days when bill_type='{BillTypeEnum.DAY.value}'"
@@ -319,6 +343,10 @@ def validate_order_comment_create_data(data: dict) -> typing.Tuple[bool, str]:
     return __validate_data(data, order_comment_create_schema)
 
 
+def validate_expense_update_data(data: dict) -> typing.Tuple[bool, str]:
+    return __validate_data(data, expense_update_schema)
+
+
 def __parse_error_msg(e: ValidationError, schema: dict):
     if e.absolute_schema_path.count(CONST.ANYOF) or e.absolute_schema_path.count(
             CONST.ONEOF) or e.absolute_schema_path.count(CONST.ALLOF):
@@ -345,9 +373,9 @@ def __parse_error_msg(e: ValidationError, schema: dict):
             if e.validator == CONST.REQUIRED:
                 err_msg = f"`{description}` 缺少必要参数" if description else "缺少必要参数"
             elif e.validator == CONST.ADDITIONAL_PROPERTIES:
-                err_msg = f"`{description}` 含有非法参数"
+                err_msg = f"`{description}` 含有非法参数" if description else "含有非法参数"
             elif e.validator in (CONST.MAX_PROPERTIES, CONST.MIN_PROPERTIES):
-                err_msg = f"`{description}` 参数数量有误"
+                err_msg = f"`{description}` 参数数量错误" if description else "参数数量错误"
             elif e.validator in (CONST.MAX_LENGTH, CONST.MIN_LENGTH):
                 err_msg = f"`{description}` 字符长度错误"
             elif e.validator in (CONST.MINITEMS, CONST.MAXITEMS):

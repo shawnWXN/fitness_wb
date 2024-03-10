@@ -106,10 +106,11 @@ class _Const(object):
     MEMBER_ID = "member_id"
     MEMBER_NAME = "member_name"
 
+    EXPIRE_TIME = 'expire_time'
     SURPLUS_COUNTS = 'surplus_counts'
     COMMENTS = 'comments'
     COMMENT = 'comment'
-    ORDER_ID = 'order_id'
+    ORDER_NO = 'order_no'
 
     ROLE = "role"
 

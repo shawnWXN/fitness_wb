@@ -2,6 +2,8 @@ import hashlib
 import multiprocessing
 import platform
 import re
+from functools import lru_cache
+
 import qrcode
 from io import BytesIO
 import base64
@@ -81,6 +83,7 @@ def camel2snake(camel: str) -> str:
     return snake.lower()
 
 
+@lru_cache()
 def str2base64(s: str) -> str:
     """
     生成字符串对应的图片（base64字符串）

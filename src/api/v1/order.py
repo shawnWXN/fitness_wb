@@ -1,11 +1,11 @@
 from sanic.views import HTTPMethodView
+from datetime import datetime, timedelta
 
 from api import check_authorize, check_staff
 from common.const import CONST
 from common.enum import StaffRoleEnum
-from infra.date_utils import get_today_date_time
+from infra.date_utils import get_today_date_time, get_datetime_zero, get_date_time_by_str
 from infra.utils import resp_failure, resp_success
-from loggers.logger import logger
 from orm.model import CourseModel, OrderModel, UserModel
 from service.validate_service import validate_order_create_data, validate_order_comment_create_data, \
     validate_order_update_data
@@ -28,15 +28,17 @@ class Order(HTTPMethodView):
         data[CONST.MEMBER_ID] = request.ctx.user.id
         data[CONST.MEMBER_NAME] = request.ctx.user.nickname
         # 根据课程ID，找到课程相关信息
-        course: CourseModel = await CourseModel.get_one(_id=data[CONST.COURSE_ID])  # 可能404（直接删除、教练解聘级联删除）
+        course: CourseModel = await CourseModel.get_one(id=data[CONST.COURSE_ID])  # 可能404（直接删除、教练解聘级联删除）
         # 补全教练信息、课程信息、计费类型、有效天数和次数
         data[CONST.COURSE_NAME] = course.name
         data[CONST.COACH_ID] = course.coach_id
         data[CONST.COACH_NAME] = course.coach_name
-        data[CONST.BILL_TYPE] = course.bill_type
-        data[CONST.LIMIT_DAYS] = course.limit_days
-        data[CONST.LIMIT_COUNTS] = course.limit_counts
-        data[CONST.SURPLUS_COUNTS] = course.limit_counts  # 剩余天数，默认跟有效天数相同
+        # data[CONST.BILL_TYPE] = course.bill_type
+        # data[CONST.LIMIT_DAYS] = course.limit_days
+        # data[CONST.LIMIT_COUNTS] = course.limit_counts
+        # # 到期时间，默认今天+有效天数+1
+        data[CONST.EXPIRE_TIME] = get_datetime_zero(datetime.now() + timedelta(days=course.limit_days + 1))
+        data[CONST.SURPLUS_COUNTS] = course.limit_counts  # 剩余次数，默认跟有效次数相同
 
         order = await OrderModel.create(**data)
         return resp_success(id=order.id)
@@ -54,21 +56,22 @@ class Order(HTTPMethodView):
         if not rst:
             return resp_failure(400, err_msg)
 
-        order: OrderModel = await OrderModel.get_one(_id=data[CONST.ID])
+        order: OrderModel = await OrderModel.get_one(id=data[CONST.ID])
+
         course_id = data.get(CONST.COURSE_ID)
         if course_id and course_id != order.course_id:
             # 根据课程ID，找到课程相关信息
-            course: CourseModel = await CourseModel.get_one(_id=course_id)  # 可能404（直接删除、教练解聘级联删除）
+            course: CourseModel = await CourseModel.get_one(id=course_id)  # 可能404（直接删除、教练解聘级联删除）
             data[CONST.COURSE_NAME] = course.name
             data[CONST.COACH_ID] = course.coach_id
             data[CONST.COACH_NAME] = course.coach_name
-        limit_counts = data.get(CONST.LIMIT_COUNTS)
-        if limit_counts and limit_counts != order.limit_counts:
-            gap = limit_counts - order.limit_counts
-            order.surplus_counts += gap
-            if order.surplus_counts < 0:
-                return resp_failure(400, "有效课时超过了已消费课时")
-            data[CONST.SURPLUS_COUNTS] = order.surplus_counts
+
+        expire_time = data.get(CONST.EXPIRE_TIME)
+        if expire_time and get_date_time_by_str(expire_time + ' 00:00:00') > datetime.now():
+            print(f"DEBUG! {get_date_time_by_str(expire_time + ' 00:00:00') > datetime.now()}")
+            data[CONST.EXPIRE_TIME] = get_date_time_by_str(expire_time + ' 00:00:00')
+        else:
+            data.pop(CONST.EXPIRE_TIME, None)  # 不能将到期时间改到过去
 
         await OrderModel.update_one(data)
         return resp_success()
@@ -88,8 +91,8 @@ class OrderComment(HTTPMethodView):
         if not rst:
             return resp_failure(400, err_msg)
 
-        order: OrderModel = await OrderModel.get_one(_id=data.pop(CONST.ORDER_ID))
-        member: UserModel = await UserModel.get_one(_id=order.member_id)
+        order: OrderModel = await OrderModel.get_one(order_no=data.pop(CONST.ORDER_NO))
+        member: UserModel = await UserModel.get_one(id=order.member_id)
         user: UserModel = request.ctx.user
         if not any([_ in user.staff_roles for _ in [StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value]]):
             assert order.coach_id == user.id, f"OrderModel[{order.id}] no access for user[{user.id}]"

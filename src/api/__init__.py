@@ -34,7 +34,7 @@ async def paging(request: Request, query: QuerySet) -> dict:
     }
 
 
-def check_staff(allowed_roles):
+def check_staff(allowed_roles: list):
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):

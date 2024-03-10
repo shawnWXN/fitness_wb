@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 import datetime
 import time
 
@@ -44,7 +43,7 @@ def minus_day_hour(start_date, end_date):
 
     days = (end_time - start_time).days
     seconds = (end_time - start_time).seconds
-    return days, seconds//3600
+    return days, seconds // 3600
 
 
 def minus_day(start_date, end_date):
@@ -274,3 +273,7 @@ def get_time_end_str(date_str):
 
 def get_time_start_str(date_str):
     return '{} {}'.format(date_str, CONST.DAY_TIME_START)
+
+
+def get_datetime_zero(date_time: datetime.datetime = datetime.datetime.now()) -> datetime.datetime:
+    return date_time.replace(hour=0, minute=0, second=0, microsecond=0)

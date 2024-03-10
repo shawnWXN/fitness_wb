@@ -6,7 +6,7 @@ from tortoise import fields
 from enum import Enum
 
 from common.const import CONST
-from common.enum import GenderEnum, BillTypeEnum, OrderStatusEnum
+from common.enum import GenderEnum, BillTypeEnum, OrderStatusEnum, ExpenseStatusEnum
 from infra.date_utils import get_date_time_str
 
 
@@ -21,16 +21,16 @@ class BaseModel(Model):
     update_time = fields.DatetimeField(auto_now=True)
 
     @classmethod
-    async def get_one(cls, _id: int) -> T:
-        obj = await cls.get_or_none(id=_id)
-        assert obj, f"{cls.__name__}[{_id}] not found"
+    async def get_one(cls, **kwargs) -> T:
+        obj = await cls.get_or_none(**kwargs)
+        assert obj, f"{cls.__name__}[{kwargs.popitem()}] not found"
         return obj
 
     @classmethod
     async def update_one(cls, data: dict) -> T:
         _id = data.pop(CONST.ID)
         assert _id, "miss model pk"
-        obj = await cls.get_one(_id)
+        obj = await cls.get_one(id=_id)
 
         for k, v in data.items():
             if v is not None:
@@ -40,7 +40,7 @@ class BaseModel(Model):
 
     @classmethod
     async def delete_one(cls, _id: int):
-        obj = await cls.get_one(_id)
+        obj = await cls.get_one(id=_id)
         await obj.delete()
 
     def to_dict(self, *field) -> dict:
@@ -96,13 +96,29 @@ class OrderModel(BaseModel):
     coach_name = fields.CharField(max_length=255, description="教练名")
     course_id = fields.IntField(description="课程编号ID")
     course_name = fields.CharField(max_length=255, description="课程名")
-    bill_type = fields.CharEnumField(BillTypeEnum, description="计费类型")
-    limit_days = fields.IntField(description="有效天数")
-    limit_counts = fields.IntField(description="有效次数")
+    # bill_type = fields.CharEnumField(BillTypeEnum, description="计费类型")
+    # limit_days = fields.IntField(description="有效天数")
+    # limit_counts = fields.IntField(description="有效次数")
+    surplus_counts = fields.IntField(description="剩余次数")
+    expire_time = fields.DatetimeField(description="到期时间")
     amount = fields.IntField(description="订单金额")
     receipt = fields.CharField(max_length=255, description="付款截图")
     contract = fields.CharField(null=True, max_length=255, description="合同文件")
-    surplus_counts = fields.IntField(description="剩余次数")
     status = fields.CharEnumField(OrderStatusEnum, description="订单状态", default=OrderStatusEnum.PENDING.value)
     order_no = fields.CharField(unique=True, max_length=255, description="订单编号", default=lambda: uuid4().hex)
+    comments = fields.JSONField(description="备注", default=[])
+
+
+class ExpenseModel(BaseModel):
+    class Meta:
+        table = "expense"
+
+    member_id = fields.IntField(description="会员编号ID")
+    member_name = fields.CharField(max_length=255, description="会员名")
+    coach_id = fields.IntField(description="教练编号ID")
+    coach_name = fields.CharField(max_length=255, description="教练名")
+    course_id = fields.IntField(description="课程编号ID")
+    course_name = fields.CharField(max_length=255, description="课程名")
+    status = fields.CharEnumField(ExpenseStatusEnum, description="消费记录状态", default=ExpenseStatusEnum.PENDING.value)
+    order_no = fields.CharField(max_length=255, description="订单编号")
     comments = fields.JSONField(description="备注", default=[])
