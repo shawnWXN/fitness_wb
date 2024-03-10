@@ -1,7 +1,8 @@
 from sanic.views import HTTPMethodView
 
-from infra.utils import resp_failure, resp_success
+from infra.utils import resp_failure, resp_success, str2base64
 from loggers.logger import logger
+from uuid import uuid4
 
 
 class Expense(HTTPMethodView):
@@ -15,7 +16,8 @@ class Expense(HTTPMethodView):
         data = request.json or dict()
         if not data.get('order_no'):
             return resp_failure(400, "miss order_no in body.")
-        return resp_success(path=f"/fitness/wb/api/v1/expense?id={data.get('order_no')}")
+        qrcode_base64 = str2base64(uuid4().hex)
+        return resp_success(qrcode=qrcode_base64)
 
     @staticmethod
     async def put(request):
@@ -24,8 +26,8 @@ class Expense(HTTPMethodView):
         :param request:
         :return:
         """
-        order_id = request.args.get('id')
-        if not order_id:
-            return resp_failure(400, "miss `id` in query string")
-        logger.info(f"收到核销码，订单ID: {order_id}")
+        expense_no = request.args.get('expense_no')
+        if not expense_no:
+            return resp_failure(400, "miss `expense_no` in query string")
+        logger.info(f"收到核销码，核销码: {expense_no}")
         return resp_success()
