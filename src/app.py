@@ -54,7 +54,8 @@ async def before_request(request):
         return
 
     # 获取x-wx-openid
-    openid = request.headers.get('x-wx-openid') or None
+    openid = request.headers.get('x-dev-openid') or None
+    # openid = request.headers.get('x-wx-openid') or None
     if not openid:
         return resp_failure(400, 'miss `x-wx-openid` in headers.')
 
@@ -111,7 +112,7 @@ def run_web_service():
                     'user': m.group('user'),
                     'password': m.group('password'),
                     'database': m.group('db'),
-                    'pool_recycle': 3600  # 回收无用db连接，解决`Packet sequence number wrong - got X expected 1` BUG
+                    'pool_recycle': 180  # 回收无用db连接，解决`Packet sequence number wrong - got X expected 1` BUG
                 }
             }
         },
