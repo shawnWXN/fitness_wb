@@ -115,8 +115,12 @@ class _Const(object):
 
     IS_ACTIVE = "is_active"
 
+    STATUS = "status"
     TRUE_STATUS = "T"
     FALSE_STATUS = "F"
+
+    CREATE_DATE_START = 'create_date_start'
+    CREATE_DATE_END = 'create_date_end'
 
     CREATE_TIME = 'create_time'
     UPDATE_TIME = 'update_time'

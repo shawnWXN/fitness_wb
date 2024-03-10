@@ -40,8 +40,9 @@ def check_staff(allowed_roles):
         async def decorated_function(request, *args, **kwargs):
             # 假设request.ctx.user是一个用户对象，包含phone属性
             user_phone = getattr(request.ctx.user, 'phone')
+            nickname = getattr(request.ctx.user, 'nickname')
             # 检查用户是否有手机号
-            if user_phone:
+            if user_phone and nickname:
                 # 假设request.ctx.user是一个用户对象，包含staff_roles属性
                 user_roles = getattr(request.ctx.user, 'staff_roles', [])
                 # 检查用户是否有允许的角色
@@ -50,39 +51,25 @@ def check_staff(allowed_roles):
                     return await f(request, *args, **kwargs)
                 else:
                     # 如果用户没有权限，返回403禁止访问
-                    return resp_failure(403, "Forbidden")
+                    return resp_failure(403, "用户暂无权限")
             else:
                 # 返回401未经授权
-                return resp_failure(401, "Unauthorized")
+                return resp_failure(401, "用户未经授权")
 
         return decorated_function
 
     return decorator
 
 
-# def check_authorized_member(f):
-#     async def decorated_function(request, *args, **kwargs):
-#         # 假设request.ctx.user是一个用户对象，包含phone属性
-#         user_phone = getattr(request.ctx.user, 'phone')
-#         # 检查用户是否有手机号
-#         if user_phone:
-#             # 继续执行视图函数
-#             return await f(request, *args, **kwargs)
-#         else:
-#             # 返回401未经授权
-#             return resp_failure(401, "Unauthorized")
-#
-#     return decorated_function
-
-
-def check_member(exclude_staff: bool = False):
+def check_authorize(exclude_staff: bool = False):
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
             # 假设request.ctx.user是一个用户对象，包含phone属性
             user_phone = getattr(request.ctx.user, 'phone')
+            nickname = getattr(request.ctx.user, 'nickname')
             # 检查用户是否有手机号
-            if user_phone:
+            if user_phone and nickname:
                 if not exclude_staff:
                     return await f(request, *args, **kwargs)
                 else:
@@ -90,10 +77,10 @@ def check_member(exclude_staff: bool = False):
                     if not user_roles:
                         return await f(request, *args, **kwargs)
                     else:
-                        return resp_failure(403, "Forbidden")
+                        return resp_failure(403, "用户暂无权限")
             else:
                 # 返回401未经授权
-                return resp_failure(401, "Unauthorized")
+                return resp_failure(401, "用户未经授权")
 
         return decorated_function
 

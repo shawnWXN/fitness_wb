@@ -33,7 +33,7 @@ class BaseModel(Model):
         obj = await cls.get_one(_id)
 
         for k, v in data.items():
-            if v:
+            if isinstance(v, int) or v:  # 数字可能为0
                 obj.__setattr__(k, v)
                 await obj.save()
         return obj
@@ -99,9 +99,10 @@ class OrderModel(BaseModel):
     bill_type = fields.CharEnumField(BillTypeEnum, description="计费类型")
     limit_days = fields.IntField(description="有效天数")
     limit_counts = fields.IntField(description="有效次数")
+    amount = fields.IntField(description="订单金额")
     receipt = fields.CharField(max_length=255, description="付款截图")
     contract = fields.CharField(null=True, max_length=255, description="合同文件")
     surplus_counts = fields.IntField(description="剩余次数")
     status = fields.CharEnumField(OrderStatusEnum, description="订单状态", default=OrderStatusEnum.PENDING.value)
-    order_no = fields.CharField(unique=True, max_length=255, description="订单编号", default=uuid4().hex)
+    order_no = fields.CharField(unique=True, max_length=255, description="订单编号", default=lambda: uuid4().hex)
     comments = fields.JSONField(description="备注", default=[])

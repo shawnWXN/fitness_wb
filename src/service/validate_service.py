@@ -4,7 +4,7 @@ import typing
 from jsonschema import validate, ValidationError, SchemaError
 
 from common.const import CONST
-from common.enum import BillTypeEnum, GenderEnum
+from common.enum import BillTypeEnum, GenderEnum, OrderStatusEnum
 from loggers.logger import logger
 
 userprofile_update_schema = {
@@ -60,14 +60,6 @@ course_create_schema = {
             "title": "课程封面图",
             "minLength": 1
         },
-        "bill_type": {
-            "type": "string",
-            "enum": [
-                BillTypeEnum.DAY.value,
-                BillTypeEnum.COUNT.value
-            ],
-            "title": "计费类型"
-        },
         "description": {
             "type": ["string", "null"],
             "title": "课程详细文字",
@@ -82,6 +74,11 @@ course_create_schema = {
             "title": "课程详细图片",
             "maxItems": 3,
             "minItems": 0
+        },
+        "bill_type": {
+            "type": "string",
+            "enum": BillTypeEnum.iter.value,
+            "title": "计费类型"
         },
         "limit_days": {
             "type": ["integer", "null"],
@@ -137,6 +134,76 @@ order_create_schema = {
         "amount",
         "receipt",
     ]
+}
+
+order_update_schema_first = {
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "ID 编号"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                OrderStatusEnum.ACTIVATED.value,
+                OrderStatusEnum.REJECT.value,
+                OrderStatusEnum.REFUND.value,
+            ],
+            "title": "订单状态"
+        }
+    },
+    "required": [
+        "id",
+        "status"
+    ]
+}
+
+order_update_schema_part = {  # 订单更新schema片段
+    "type": "object",
+    "properties": {
+        "course_id": {
+            "type": ["integer", "null"],
+            "minimum": 1,
+            "title": "课程ID"
+        },
+        "bill_type": {
+            "type": "string",
+            "enum": BillTypeEnum.iter.value,
+            "title": "计费类型"
+        },
+        "limit_days": {
+            "type": ["integer", "null"],
+            "minimum": 1,
+            "maximum": 1000,
+            "exclusiveMaximum": 1000,
+            "title": "有效天数"
+        },
+        "limit_counts": {
+            "type": ["integer", "null"],
+            "minimum": 1,
+            "maximum": 1000,
+            "exclusiveMaximum": 1000,
+            "title": "有效次数"
+        },
+        "amount": {
+            "type": ["integer", "null"],
+            "minimum": 1,
+            "title": "订单金额",
+            "description": "RMB",
+        },
+        "receipt": {
+            "type": ["string", "null"],
+            "title": "付款截图",
+            "minLength": 1
+        },
+        "contract": {
+            "type": ["string", "null"],
+            "title": "合同文件",
+            "minLength": 1
+        }
+    }
 }
 
 order_comment_create_schema = {
@@ -202,6 +269,19 @@ def validate_course_update_data(data: dict) -> typing.Tuple[bool, str]:
 
 def validate_order_create_data(data: dict) -> typing.Tuple[bool, str]:
     return __validate_data(data, order_create_schema)
+
+
+def validate_order_update_data(data: dict) -> typing.Tuple[bool, str]:
+    rst, err_msg = __validate_data(data, order_update_schema_first)
+    if not rst:
+        return rst, err_msg
+
+    if data.get("status") == OrderStatusEnum.ACTIVATED.value:
+        return __validate_data(data, order_update_schema_part)
+    else:
+        [data.pop(k) for k in list(data.keys()) if k not in ("id", "status")]
+
+    return True, ''
 
 
 def validate_order_comment_create_data(data: dict) -> typing.Tuple[bool, str]:

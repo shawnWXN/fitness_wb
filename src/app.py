@@ -44,17 +44,18 @@ async def before_request(request):
     except Exception:  # noqa
         body = request.body
 
+    openid_str = 'x-dev-openid'
+
     headers = []
     for header, value in request.headers.items():
         headers.append(f"{header}={value}")
 
-    log_msg = f"{request.method} {request.path}, headers:{';'.join(headers)}, args:{request.args}, body:{body}"
+    log_msg = f"{request.method} {request.path}, {openid_str}:{request.headers.get(openid_str)}, args:{request.args}, body:{body}"
     if not request.route:
         logger.warning(log_msg)  # 404时，return后将直接到ErrorHandler
         return
-    openid_str = 'x-dev-openid'
+
     openid = request.headers.get(openid_str) or None
-    # openid = request.headers.get('x-wx-openid') or None
     if not openid:
         logger.warning(log_msg)
         return resp_failure(400, f'miss `{openid_str}` in headers.')
@@ -128,3 +129,6 @@ def run_web_service():
 
 
 run_web_service()
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000)

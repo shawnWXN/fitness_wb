@@ -5,11 +5,18 @@ class StaffRoleEnum(Enum):
     COACH = 10
     MASTER = 50
     ADMIN = 99
+
     explain = {
         COACH: "教练",
         MASTER: "店主",
         ADMIN: "管理员"
     }
+
+    iter = [
+        COACH,
+        MASTER,
+        ADMIN
+    ]
 
 
 class GenderEnum(Enum):
@@ -23,6 +30,12 @@ class GenderEnum(Enum):
         MALE: "男性"
     }
 
+    iter = [
+        UNKNOWN,
+        FEMALE,
+        MALE
+    ]
+
 
 class BillTypeEnum(Enum):
     DAY = "day"
@@ -32,6 +45,11 @@ class BillTypeEnum(Enum):
         DAY: "计时",
         COUNT: "计次"
     }
+
+    iter = [
+        DAY,
+        COUNT,
+    ]
 
 
 class OrderStatusEnum(Enum):
@@ -48,3 +66,11 @@ class OrderStatusEnum(Enum):
         EXPIRED: "已过期",
         REFUND: "已退款"
     }
+
+    iter = [
+        PENDING,
+        REJECT,
+        ACTIVATED,
+        EXPIRED,
+        REFUND
+    ]

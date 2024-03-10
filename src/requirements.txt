@@ -5,7 +5,7 @@ tortoise-orm==0.20.0
 faker==23.3.0
 APScheduler==3.10.4
 aiomysql==0.2.0
-aiohttp
+aiohttp==3.9.3
 python-dotenv==1.0.1
 pyfiglet==1.0.2
 qrcode==7.4.2

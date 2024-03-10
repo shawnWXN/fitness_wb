@@ -26,14 +26,17 @@ async def faker_users():
 
 async def find_users(request) -> dict:
     """
-    users列表
+    店主/管理员查看用户列表
     """
-    _id: str = request.args.get(CONST.ID)
     search: str = request.args.get(CONST.SEARCH)
     staff_roles: str = request.args.get(CONST.STAFF_ROLES)
 
-    # 开始判断权限
     user: UserModel = request.ctx.user
+    max_role = max(user.staff_roles)
+    default_roles = [role for role in StaffRoleEnum.iter.value if role < max_role]  # 当前用户允许筛选的角色列表
+    default_roles.append('null')  # 加入null的会员
+    filter_roles = set(default_roles) & set(staff_roles.split(','))  # 与前端的staff_roles取交集
+    # TODO 用户管理写到这了
     if not user.staff_roles:
         ...
     elif any([_ in user.staff_roles for _ in [StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value]]):

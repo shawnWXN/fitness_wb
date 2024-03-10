@@ -1,6 +1,6 @@
 from sanic.views import HTTPMethodView
 
-from api import check_staff, check_member
+from api import check_staff, check_authorize
 from common.const import CONST
 from common.enum import StaffRoleEnum, BillTypeEnum
 from infra.utils import resp_failure, resp_success
@@ -17,6 +17,7 @@ class Course(HTTPMethodView):
         :param request:
         :return:
         """
+        # TODO 有暴刷风险
         return resp_success(await find_courses(request))
 
     @staticmethod
@@ -73,7 +74,7 @@ class Course(HTTPMethodView):
 
 class CourseConsult(HTTPMethodView):
     @staticmethod
-    @check_member(exclude_staff=True)
+    @check_authorize(exclude_staff=True)
     async def get(request):
         """
         咨询更多
