@@ -8,9 +8,9 @@ from infra.utils import resp_success, resp_failure
 from loggers.logger import logger
 from orm.model import UserModel
 from orm.order_orm import my_orders
-from orm.user_orm import find_users
+from orm.user_orm import find_users, update_user
 
-from service.validate_service import validate_userprofile_update_data
+from service.validate_service import validate_userprofile_update_data, validate_user_update_data
 
 
 class User(HTTPMethodView):
@@ -24,7 +24,11 @@ class User(HTTPMethodView):
         :return:
         """
         staff_roles: str = request.args.get(CONST.STAFF_ROLES)
-        if staff_roles and set(staff_roles.split(',')) - set(StaffRoleEnum.iter.value):
+
+        allowed_roles: set = set(map(str, StaffRoleEnum.iter.value))
+        allowed_roles.add('null')
+
+        if staff_roles and set(staff_roles.split(',')) - allowed_roles:
             return resp_failure(400, f'`staff_roles` 含有非法参数')
 
         pagination = await find_users(request)
@@ -34,14 +38,18 @@ class User(HTTPMethodView):
     @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
     async def put(request):
         """
-        查看所有user
+        修改user的权限
         :param request:
         :return:
         """
         # TODO 取消教练，对应课程也删除 + 提醒管理员或店主去修改在期订单的归属教练
-        # await faker_users()
-        pagination = await find_users(request)
-        return resp_success(pagination)
+        data = request.json or dict()
+        rst, err_msg = validate_user_update_data(data)
+        if not rst:
+            return resp_failure(400, err_msg)
+
+        await update_user(request)
+        return resp_success()
 
 
 class UserProfile(HTTPMethodView):

@@ -4,7 +4,7 @@ import typing
 from jsonschema import validate, ValidationError, SchemaError
 
 from common.const import CONST
-from common.enum import BillTypeEnum, GenderEnum, OrderStatusEnum
+from common.enum import BillTypeEnum, GenderEnum, OrderStatusEnum, StaffRoleEnum
 from loggers.logger import logger
 
 userprofile_update_schema = {
@@ -35,6 +35,32 @@ userprofile_update_schema = {
             ]
         }
     }
+}
+
+user_update_schema = {
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "title": "ID 编号",
+            "minimum": 1
+        },
+        "staff_role": {
+            "type": ["array", "null"],
+            "items": {
+                "type": "integer",
+                "enum": StaffRoleEnum.iter.value
+            },
+            "title": "账号权限列表",
+            "description": "员工非空，会员为空",
+            "minItems": 0,
+            "maxItems": len(StaffRoleEnum.iter.value),
+            "uniqueItems": True
+        }
+    },
+    "required": [
+        "id"
+    ]
 }
 
 course_create_schema = {
@@ -229,6 +255,10 @@ order_comment_create_schema = {
 
 def validate_userprofile_update_data(data: dict) -> typing.Tuple[bool, str]:
     return __validate_data(data, userprofile_update_schema)
+
+
+def validate_user_update_data(data: dict) -> typing.Tuple[bool, str]:
+    return __validate_data(data, user_update_schema)
 
 
 def validate_course_create_data(data: dict) -> typing.Tuple[bool, str]:
