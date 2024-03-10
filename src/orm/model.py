@@ -33,7 +33,7 @@ class BaseModel(Model):
         obj = await cls.get_one(_id)
 
         for k, v in data.items():
-            if isinstance(v, int) or v:  # 数字可能为0
+            if v is not None:
                 obj.__setattr__(k, v)
                 await obj.save()
         return obj

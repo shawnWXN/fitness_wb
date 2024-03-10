@@ -70,7 +70,6 @@ class Order(HTTPMethodView):
                 return resp_failure(400, "有效课时超过了已消费课时")
             data[CONST.SURPLUS_COUNTS] = order.surplus_counts
 
-        logger.info(f"data: {data}")
         await OrderModel.update_one(data)
         return resp_success()
 
@@ -101,10 +100,10 @@ class OrderComment(HTTPMethodView):
         data[CONST.ID] = order.id
         data[CONST.COMMENTS] = order.comments or []
         data[CONST.COMMENTS].append(f"({now_dt_str}) User({user.id},{user.nickname}): {this_comment}")
-        await order.update_one(data)
+        await OrderModel.update_one(data)
 
         member_data = {CONST.ID: member.id, CONST.COMMENTS: member.comments}
         member_data.setdefault(CONST.COMMENTS, []).append(
             f"({now_dt_str}) User({user.id},{user.nickname}) Order({order.id}): {this_comment}")
-        await member.update_one(member_data)
+        await UserModel.update_one(member_data)
         return resp_success()

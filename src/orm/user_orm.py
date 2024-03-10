@@ -63,14 +63,16 @@ async def find_users(request) -> dict:
 
 async def update_user(request):
     current_user: UserModel = request.ctx.user
-    current_user_role = max(current_user.staff_roles)
+    current_user_role = max(current_user.staff_roles) if current_user.staff_roles else 0
 
     data = request.json or dict()
     user: UserModel = await UserModel.get_one(_id=data[CONST.ID])
-    user_role = max(user.staff_roles)
+    user_role = max(user.staff_roles) if user.staff_roles else 0
 
-    assert user_role >= current_user_role, f"UserModel[{user.id}] no access for user[{current_user.id}]"
+    assert user_role < current_user_role, f"UserModel[{user.id}] no access for user[{current_user.id}]"
 
     staff_roles = data.get(CONST.STAFF_ROLES)
-    if staff_roles is None:
-        await user.update_one(data)
+    if staff_roles is not None:
+        imparted_role = max(staff_roles) if staff_roles else 0
+        assert imparted_role < current_user_role, f"no access to grant higher role via user[{current_user.id}]"
+        await UserModel.update_one(data)
