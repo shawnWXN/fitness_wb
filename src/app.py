@@ -48,16 +48,15 @@ async def before_request(request):
     for header, value in request.headers.items():
         headers.append(f"{header}={value}")
 
-    log_msg = f"{request.method} {request.path}, openid:{request.headers.get('x-wx-openid')}, args:{request.args}, body:{body}"
+    log_msg = f"{request.method} {request.path}, headers:{';'.join(headers)}, args:{request.args}, body:{body}"
     if not request.route:
         logger.warning(log_msg)  # 404时，return后将直接到ErrorHandler
         return
-
-    # 获取x-wx-openid
-    openid = request.headers.get('x-dev-openid') or None
+    openid_str = 'x-dev-openid'
+    openid = request.headers.get(openid_str) or None
     # openid = request.headers.get('x-wx-openid') or None
     if not openid:
-        return resp_failure(400, 'miss `x-wx-openid` in headers.')
+        return resp_failure(400, f'miss `{openid_str}` in headers.')
 
     request.ctx.user, _ = await UserModel.get_or_create(openid=openid)
     logger.info(log_msg)
