@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
+
 from tortoise.queryset import Q
 
 from api import paging
 from common.const import CONST
-from orm.model import OrderModel
+from common.enum import StaffRoleEnum
+from orm.model import OrderModel, UserModel
 
 
 async def my_orders(request) -> dict:
@@ -30,5 +32,24 @@ async def my_orders(request) -> dict:
         query = query.filter(create_time__gte=create_date_start.strftime(date_format))
     if create_date_end:
         query = query.filter(create_time__lt=(create_date_end + timedelta(days=1)).strftime(date_format))  # 要加一天
+
+    return await paging(request, query)
+
+
+async def find_orders(request) -> dict:
+    """
+    订单列表
+    """
+    search: str = request.args.get(CONST.SEARCH)
+    status: str = request.args.get(CONST.STATUS)
+
+    user: UserModel = request.ctx.user
+    role = max(user.staff_roles) if user.staff_roles else 0
+
+    query = OrderModel.filter()
+    if StaffRoleEnum.COACH.value == role:
+        query = query(coach_id=user.id)
+    if search:
+        query = query.filter(Q(name__icontains=search) | Q(coach_name__icontains=search))
 
     return await paging(request, query)

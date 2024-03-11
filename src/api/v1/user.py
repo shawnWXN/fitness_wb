@@ -1,15 +1,15 @@
 from datetime import datetime
+
 from sanic.views import HTTPMethodView
 
 from api import check_staff, check_authorize
 from common.const import CONST
 from common.enum import StaffRoleEnum, OrderStatusEnum, ExpenseStatusEnum
 from infra.utils import resp_success, resp_failure
-from orm.model import UserModel
 from orm.expense_orm import my_expenses
+from orm.model import UserModel
 from orm.order_orm import my_orders
 from orm.user_orm import find_users, update_user
-
 from service.validate_service import validate_userprofile_update_data, validate_user_update_data
 
 
@@ -85,7 +85,7 @@ class UserOrder(HTTPMethodView):
     @check_authorize(exclude_staff=True)
     async def get(request):
         """
-        我的订单（课程即订单状态为“activated”）
+        我的订单（已开通课程即订单状态为“activated”）
         :param request:
         :return:
         """

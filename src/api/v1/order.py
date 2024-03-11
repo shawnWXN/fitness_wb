@@ -1,5 +1,6 @@
-from sanic.views import HTTPMethodView
 from datetime import datetime, timedelta
+
+from sanic.views import HTTPMethodView
 
 from api import check_authorize, check_staff
 from common.const import CONST
@@ -7,11 +8,22 @@ from common.enum import StaffRoleEnum
 from infra.date_utils import get_today_date_time, get_datetime_zero, get_date_time_by_str
 from infra.utils import resp_failure, resp_success
 from orm.model import CourseModel, OrderModel, UserModel
+from orm.order_orm import find_orders
 from service.validate_service import validate_order_create_data, validate_order_comment_create_data, \
     validate_order_update_data
 
 
 class Order(HTTPMethodView):
+    @staticmethod
+    @check_staff(StaffRoleEnum.iter.value)
+    async def get(request):
+        """
+        查看所有订单
+        :param request:
+        :return:
+        """
+        return resp_success(await find_orders(request))
+
     @staticmethod
     @check_authorize(exclude_staff=True)
     async def post(request):
