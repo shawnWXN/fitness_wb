@@ -4,13 +4,13 @@ from sanic.views import HTTPMethodView
 
 from api import check_authorize, check_staff
 from common.const import CONST
-from common.enum import StaffRoleEnum
+from common.enum import StaffRoleEnum, OrderStatusEnum
 from infra.date_utils import get_today_date_time, get_datetime_zero, get_date_time_by_str
 from infra.utils import resp_failure, resp_success
 from orm.model import CourseModel, OrderModel, UserModel
 from orm.order_orm import find_orders
 from service.validate_service import validate_order_create_data, validate_order_comment_create_data, \
-    validate_order_update_data
+    validate_order_update_data, validate_order_expense_get_args
 
 
 class Order(HTTPMethodView):
@@ -22,6 +22,10 @@ class Order(HTTPMethodView):
         :param request:
         :return:
         """
+        rst, err_msg = validate_order_expense_get_args(request, OrderStatusEnum)
+        if not rst:
+            return resp_failure(400, err_msg)
+
         return resp_success(await find_orders(request))
 
     @staticmethod
@@ -121,4 +125,17 @@ class OrderComment(HTTPMethodView):
         member_data.setdefault(CONST.COMMENTS, []).append(
             f"({now_dt_str}) User({user.id},{user.nickname}) Order({order.id}): {this_comment}")
         await UserModel.update_one(member_data)
+        return resp_success()
+
+
+class OrderCoach(HTTPMethodView):
+    @staticmethod
+    @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
+    async def put(request):
+        """
+        更换教练
+        :param request:
+        :return:
+        """
+        ...
         return resp_success()

@@ -1,5 +1,6 @@
 import copy
 import typing
+from datetime import datetime
 
 from jsonschema import validate, ValidationError, SchemaError
 
@@ -269,6 +270,39 @@ expense_update_schema = {
         "status"
     ]
 }
+
+
+def validate_order_expense_get_args(request, status_enum: typing.Type[OrderStatusEnum] | typing.Type[ExpenseStatusEnum]):
+    status: str = request.args.get(CONST.STATUS)
+    create_date_start: str = request.args.get(CONST.CREATE_DATE_START)
+    create_date_end: str = request.args.get(CONST.CREATE_DATE_END)
+
+    # 要求1: 校验status
+    if status and set(status.split(',')) - set(status_enum.iter.value):
+        return False, f"`status` 不在指定范围"
+
+    # 要求2: 校验日期格式
+    request.ctx.args = dict()
+    date_format = "%Y-%m-%d"
+    try:
+        if create_date_start:
+            # 尝试将字符串转换为日期对象
+            start_date = datetime.strptime(create_date_start, date_format)
+            request.ctx.args[CONST.CREATE_DATE_START] = start_date  # 这里改str为datetime.datetime
+        if create_date_end:
+            # 尝试将字符串转换为日期对象
+            end_date = datetime.strptime(create_date_end, date_format)
+            request.ctx.args[CONST.CREATE_DATE_END] = end_date  # 这里改str为datetime.datetime
+    except ValueError:
+        # 如果转换失败，说明日期格式不正确
+        return False, f"`create_date_start` or `create_date_end` 正则匹配失败"
+
+    # 要求3: 校验create_date_end是否大于等于create_date_start
+    if create_date_start and create_date_end:
+        if end_date < start_date:  # noqa
+            return False, f"`create_date_end`不得小于`create_date_start`"
+
+    return True, None
 
 
 def validate_userprofile_update_data(data: dict) -> typing.Tuple[bool, str]:

@@ -6,12 +6,27 @@ from api import check_staff, check_authorize
 from common.const import CONST
 from common.enum import StaffRoleEnum, OrderStatusEnum, ExpenseStatusEnum
 from infra.utils import resp_failure, resp_success, str2base64
+from orm.expense_orm import find_expenses
 
 from orm.model import OrderModel, UserModel, ExpenseModel
-from service.validate_service import validate_expense_update_data
+from service.validate_service import validate_expense_update_data, validate_order_expense_get_args
 
 
 class Expense(HTTPMethodView):
+    @staticmethod
+    @check_staff(StaffRoleEnum.iter.value)
+    async def get(request):
+        """
+        查看所有订单
+        :param request:
+        :return:
+        """
+        rst, err_msg = validate_order_expense_get_args(request, ExpenseStatusEnum)
+        if not rst:
+            return resp_failure(400, err_msg)
+
+        return resp_success(await find_expenses(request))
+
     @staticmethod
     @check_staff([StaffRoleEnum.COACH.value])
     async def post(request):
@@ -95,7 +110,8 @@ class ExpenseQrcode(HTTPMethodView):
 async def prepare_check(order: OrderModel, current_user: UserModel):
     # order: OrderModel = await OrderModel.get_one(order_no=order_no)
     # 判断订单状态是否activated、还在有效期、剩余次数大于零
-    if order.status != OrderStatusEnum.ACTIVATED or order.expire_time <= datetime.now(pytz.timezone('Asia/Shanghai')) or order.surplus_counts <= 0:
+    if order.status != OrderStatusEnum.ACTIVATED or order.expire_time <= datetime.now(
+            pytz.timezone('Asia/Shanghai')) or order.surplus_counts <= 0:
         raise AssertionError(f"OrderModel[{order.order_no}] no access for activated")
 
     if StaffRoleEnum.COACH.value in current_user.staff_roles:

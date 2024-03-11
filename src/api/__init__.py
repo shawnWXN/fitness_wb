@@ -7,7 +7,7 @@ from common.const import CONST
 from infra.utils import resp_failure
 
 
-async def paging(request: Request, query: QuerySet) -> dict:
+async def paging(request: Request, query: QuerySet, order_by: tuple = ('-id',)) -> dict:
     page_size = request.args.get(CONST.PAGE_SIZE)
     page_num = request.args.get(CONST.PAGE_NUM)
     if page_size and page_size.isdigit():
@@ -22,7 +22,8 @@ async def paging(request: Request, query: QuerySet) -> dict:
         page_num = 1
 
     count = await query.count()
-    objs = await query.order_by('create_time').offset(page_size * (page_num - 1)).limit(page_size)
+    objs = await query.order_by(*order_by).offset(page_size * (page_num - 1)).limit(
+        page_size)
     items = [obj.to_dict() for obj in objs]
     return {
         'total': count,

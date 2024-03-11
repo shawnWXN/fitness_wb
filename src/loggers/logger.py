@@ -5,6 +5,7 @@ from pathlib import Path
 import colorlog
 
 from common.const import CONST
+from settings.setting import SETTING
 
 # 创建日志目录
 LOG_PATH = Path.cwd().parent / 'logs'
@@ -52,7 +53,7 @@ def init_logger(log_level):
     return _log
 
 
-logger = init_logger(logging.INFO)
+logger = init_logger(logging.getLevelName(SETTING.LOG_LEVEL))
 
 
 def get_other_logger_format(module_name: str):
@@ -93,5 +94,5 @@ def init_other_logger(log_level, module_name: str):
     return _log
 
 
-schedule_log = init_other_logger(logging.DEBUG, 'apscheduler')
+# schedule_log = init_other_logger(logging.DEBUG, 'apscheduler')
 # db_log = init_other_logger(logging.DEBUG, 'tortoise.db_client')

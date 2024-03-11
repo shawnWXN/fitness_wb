@@ -49,16 +49,6 @@ def md5(str_value):
     return m.hexdigest()
 
 
-def check_token(data: dict):
-    timestamp = data.get(CONST.TIMESTAMP, "")
-    outer_token = data.get(CONST.TOKEN, "")
-    inner_token = md5(SETTING.TOKEN_SEED + timestamp)
-    if outer_token != inner_token:
-        logger.warning(
-            f"outer_token: {outer_token}, inner_token: {inner_token} ref: md5(token_seed={SETTING.TOKEN_SEED}, timestamp={timestamp})")
-        return False
-    return True
-
 
 def snake2camel(snake: str, start_lower: bool = False) -> str:
     """

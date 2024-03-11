@@ -121,4 +121,4 @@ class ExpenseModel(BaseModel):
     course_name = fields.CharField(max_length=255, description="课程名")
     status = fields.CharEnumField(ExpenseStatusEnum, description="消费记录状态", default=ExpenseStatusEnum.PENDING.value)
     order_no = fields.CharField(max_length=255, description="订单编号")
-    comments = fields.JSONField(description="备注", default=[])
+    # comments = fields.JSONField(description="备注", default=[])

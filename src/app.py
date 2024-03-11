@@ -44,24 +44,22 @@ async def before_request(request):
     except Exception:  # noqa
         body = request.body
 
-    openid_str = 'x-dev-openid'
+    openid_str = 'x-dev-openid' if SETTING.DEV else 'x-wx-openid'
 
-    headers = []
-    for header, value in request.headers.items():
-        headers.append(f"{header}={value}")
-
-    log_msg = f"{request.method} {request.path}, {openid_str}:{request.headers.get(openid_str)}, args:{request.args}, body:{body}"
+    log_msg = f"{request.method} {request.path}, args:{request.args}, body:{body}"
     if not request.route:
-        logger.warning(log_msg)  # 404时，return后将直接到ErrorHandler
-        return
+        logger.warning(log_msg + ", status_code 404.")  # 404时，return后将直接到ErrorHandler
+        return resp_failure(404, f"Requested URL {request.path} not found")
 
     openid = request.headers.get(openid_str) or None
     if not openid:
-        logger.warning(log_msg)
-        return resp_failure(400, f'miss `{openid_str}` in headers.')
+        logger.warning(log_msg + ", status_code 400.")
+        return resp_failure(400, f"miss `{openid_str}` in headers.")
 
-    request.ctx.user, _ = await UserModel.get_or_create(openid=openid)
-    logger.info(log_msg)
+    user, _ = await UserModel.get_or_create(openid=openid)
+    user_info = f", user[id={user.id},openid={user.openid},role={user.staff_roles}], args:"
+    logger.info(log_msg.replace(", args:", user_info))
+    request.ctx.user = user
 
 
 @app.listener("before_server_start")
@@ -126,6 +124,8 @@ def run_web_service():
         'timezone': 'Asia/Shanghai'  # 默认是UTC
     }
     register_tortoise(app, config=tortoise_config, generate_schemas=True)
+    if SETTING.DEV:
+        logger.warning("SERVER IS DEV MODE.")
 
 
 run_web_service()
