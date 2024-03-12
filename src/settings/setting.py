@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass, field
+
 from dotenv import load_dotenv
 
 # 加载 .env 文件中的环境变量
@@ -9,7 +10,7 @@ load_dotenv()
 @dataclass
 class _SETTING:
     DEV: bool = field(default=False)
-    MYSQL_URI: str = field(default='mysql://root:wang2702@120.78.190.176:28060/fitness_db')
+    MYSQL_URI: str = field(default='mysql://*:*@*:*/fitness_db')
     LOG_LEVEL: str = field(default='INFO')
 
     def __post_init__(self):
