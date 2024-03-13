@@ -14,6 +14,7 @@ from infra.utils import resp_failure, camel2snake
 from loggers.logger import logger
 from orm.model import UserModel
 from scheduler.core import aps
+from scheduler.tasks import run_tasks
 from settings.setting import SETTING
 
 app = Sanic(CONST.SYSTEM_APP_NAME)
@@ -65,6 +66,7 @@ async def before_request(request):
 @app.listener("before_server_start")
 async def before_server_start(app, loop):
     aps.run(loop)
+    run_tasks()
 
 
 @app.listener("before_server_stop")

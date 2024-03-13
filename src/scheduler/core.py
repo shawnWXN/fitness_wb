@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 import os
+import traceback
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler import events
 
 from loggers.logger import logger
 
@@ -16,12 +18,16 @@ class _Scheduler:
 
         self.aps = None
 
-    def add(self, *arg, **kw):
+    def add_job(self, *arg, **kw):
         self.aps.add_job(*arg, **kw)
 
     def run(self, loop):
         logger.info("Start Apscheduler. " + f'bound event_loop at PID[{os.getpid()}]' if loop else '')
         self.aps = AsyncIOScheduler(job_defaults=self.job_defaults, event_loop=loop)
+        self.aps.add_listener(
+            lambda e: logger.error(
+                f'Job error: {str(e.exception)}, \n{"".join(traceback.format_tb(e.exception.__traceback__))}'),
+            events.EVENT_JOB_ERROR)
         self.aps.start()
 
     def stop(self):

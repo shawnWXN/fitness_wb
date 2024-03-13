@@ -14,12 +14,11 @@ class _SETTING:
     LOG_LEVEL: str = field(default='INFO')
 
     def __post_init__(self):
-        for attr, _field in self.__dataclass_fields__.items():
+        for attr, _field in self.__dataclass_fields__.items():  # noqa
             env_value = os.getenv(attr)
             if env_value is not None:
                 # 根据字段类型转换环境变量值
                 setattr(self, attr, self._convert_type(_field.type, env_value))
-            print(f'SETTING {attr} -> {getattr(self, attr)}')
 
     @staticmethod
     def _convert_type(field_type, env_value):

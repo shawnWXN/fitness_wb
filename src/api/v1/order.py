@@ -84,7 +84,6 @@ class Order(HTTPMethodView):
 
         expire_time = data.get(CONST.EXPIRE_TIME)
         if expire_time and get_date_time_by_str(expire_time + ' 00:00:00') > datetime.now():
-            print(f"DEBUG! {get_date_time_by_str(expire_time + ' 00:00:00') > datetime.now()}")
             data[CONST.EXPIRE_TIME] = get_date_time_by_str(expire_time + ' 00:00:00')
         else:
             data.pop(CONST.EXPIRE_TIME, None)  # 不能将到期时间改到过去
@@ -125,17 +124,4 @@ class OrderComment(HTTPMethodView):
         member_data.setdefault(CONST.COMMENTS, []).append(
             f"({now_dt_str}) User({user.id},{user.nickname}) Order({order.id}): {this_comment}")
         await UserModel.update_one(member_data)
-        return resp_success()
-
-
-class OrderCoach(HTTPMethodView):
-    @staticmethod
-    @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
-    async def put(request):
-        """
-        更换教练
-        :param request:
-        :return:
-        """
-        ...
         return resp_success()

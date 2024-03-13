@@ -1,3 +1,4 @@
+import aiohttp
 from sanic.views import HTTPMethodView
 
 from api import check_staff, check_authorize
@@ -93,9 +94,20 @@ class CourseConsult(HTTPMethodView):
         :return:
         """
         course_id = request.args.get(CONST.COURSE_ID) or 0
-        course = await CourseModel.get_one(id=course_id)
-        # TODO 发送请求
-        return resp_success()
+        course: CourseModel = await CourseModel.get_one(id=course_id)
+        coach: UserModel = await UserModel.get_one(id=course.coach_id)
+        # async with aiohttp.ClientSession() as session:
+        #     await session.post(
+        #         'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=e020e7e0-cdd9-4f55-83cf-8f800db5b316',
+        #         json={
+        #             'msgtype': 'text',
+        #             'text': {
+        #                 "content": "hello world"
+        #             }
+        #         }
+        #     )
+
+        return resp_success(data={'phone': coach.phone})
 
 
 async def prepare_data(data: dict):

@@ -52,7 +52,7 @@ def check_staff(allowed_roles: list):
                     return await f(request, *args, **kwargs)
                 else:
                     # 如果用户没有权限，返回403禁止访问
-                    return resp_failure(403, "用户暂无权限")
+                    return resp_failure(403, "用户角色受限")
             else:
                 # 返回401未经授权
                 return resp_failure(401, "用户未经授权")
@@ -78,7 +78,7 @@ def check_authorize(exclude_staff: bool = False):
                     if not user_roles:
                         return await f(request, *args, **kwargs)
                     else:
-                        return resp_failure(403, "用户暂无权限")
+                        return resp_failure(403, "用户角色受限")
             else:
                 # 返回401未经授权
                 return resp_failure(401, "用户未经授权")
