@@ -70,4 +70,4 @@ async def find_expenses(request) -> dict:
     if create_date_end:
         query = query.filter(create_time__lt=(create_date_end + timedelta(days=1)).strftime(date_format))  # 要加一天
 
-    return await paging(request, query, ('expire_time', 'surplus_counts'))
+    return await paging(request, query)
