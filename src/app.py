@@ -45,17 +45,21 @@ async def before_request(request):
     except Exception:  # noqa
         body = request.body
 
-    openid_str = 'x-dev-openid' if SETTING.DEV else 'x-wx-openid'
-
     log_msg = f"{request.method} {request.path}, args:{request.args}, body:{body}"
     if not request.route:
         logger.warning(log_msg + ", status_code 404.")  # 404时，return后将直接到ErrorHandler
         return resp_failure(404, f"Requested URL {request.path} not found")
 
-    openid = request.headers.get(openid_str) or None
+    real_id = request.headers.get('x-wx-openid') or None
+    mock_id = request.headers.get('x-dev-openid') or None
+    if SETTING.DEV:
+        openid = mock_id or real_id
+    else:
+        openid = real_id
+
     if not openid:
         logger.warning(log_msg + ", status_code 400.")
-        return resp_failure(400, f"miss `{openid_str}` in headers.")
+        return resp_failure(400, f"not found openid in headers.")
 
     user, _ = await UserModel.get_or_create(openid=openid)
     user_info = f", user[id={user.id},openid={user.openid},role={user.staff_roles}], args:"
