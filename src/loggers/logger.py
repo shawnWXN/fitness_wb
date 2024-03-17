@@ -18,8 +18,6 @@ def get_logger_file_name(prefix=""):
 
 def get_logger_format() -> str:
     fmt = '[%(levelname)s]'
-    fmt += '-[%(process)d]'
-    fmt += '-[%(threadName)s]'
     fmt += '-[%(thread)d]'
     fmt += '-[%(filename)s:%(lineno)s]'
     fmt += ' # %(message)s'
@@ -57,11 +55,8 @@ logger = init_logger(logging.getLevelName(SETTING.LOG_LEVEL))
 
 
 def get_other_logger_format(module_name: str):
-    fmt = '[%(asctime)s]'
-    fmt += '-[%(levelname)s]'
-    fmt += '-[%(process)d]'
+    fmt = '[%(levelname)s]'
     fmt += f'-[{module_name.title()}]'
-    fmt += '-[%(thread)d]'
     fmt += '-[%(filename)s:%(lineno)s]'
     fmt += ' # %(message)s'
     return fmt
@@ -74,7 +69,7 @@ def add_other_rotating_file_handler(_log, module_name: str, file_name, level=Non
     if level:
         handler.setLevel(level)
 
-    handler.setFormatter(logging.Formatter(get_other_logger_format(module_name)))
+    handler.setFormatter(logging.Formatter('[%(asctime)s]-' + get_other_logger_format(module_name)))
     _log.addHandler(handler)
 
 
