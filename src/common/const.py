@@ -132,8 +132,8 @@ class _Const(object):
     SEAS_OP_ENUM = [ALLOT, BACK, DEL]
     SEARCH = 'search'
     STAFF_ROLES = 'staff_roles'
-    PAGE_SIZE = 'page_size'
-    PAGE_NUM = 'page_num'
+    PAGE_SIZE = 'size'
+    PAGE_NUM = 'page'
 
     CNAME = 'cname'
     BRAND = 'brand'
