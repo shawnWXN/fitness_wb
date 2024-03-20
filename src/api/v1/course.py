@@ -60,7 +60,7 @@ class Course(HTTPMethodView):
 
         await prepare_data(data)
 
-        course: CourseModel = CourseModel.get_one(id=data[CONST.ID])
+        course: CourseModel = await CourseModel.get_one(id=data[CONST.ID])
         coach_id = data.get(CONST.COACH_ID)
         # 有更新教练信息
         if coach_id and course.coach_id != coach_id:
