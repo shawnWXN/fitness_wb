@@ -1,6 +1,6 @@
+import shortuuid
 import typing
 from datetime import datetime
-from uuid import uuid4
 from tortoise.models import Model
 from tortoise import fields
 from enum import Enum
@@ -105,7 +105,7 @@ class OrderModel(BaseModel):
     receipt = fields.CharField(max_length=255, description="付款截图")
     contract = fields.CharField(null=True, max_length=255, description="合同文件")
     status = fields.CharEnumField(OrderStatusEnum, description="订单状态", default=OrderStatusEnum.PENDING.value)
-    order_no = fields.CharField(unique=True, max_length=255, description="订单编号", default=lambda: uuid4().hex)
+    order_no = fields.CharField(unique=True, max_length=255, description="订单编号", default=lambda: shortuuid.uuid())
     comments = fields.JSONField(description="备注", default=[])
 
 

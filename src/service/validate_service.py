@@ -111,15 +111,15 @@ course_create_schema = {
         "limit_days": {
             "type": ["integer", "null"],
             "minimum": 0,
-            "maximum": 10000,
-            "exclusiveMaximum": 10000,
+            "maximum": 1000,
+            "exclusiveMaximum": 1000,
             "title": "有效天数"
         },
         "limit_counts": {
             "type": ["integer", "null"],
             "minimum": 0,
-            "maximum": 10000,
-            "exclusiveMaximum": 10000,
+            "maximum": 1000,
+            "exclusiveMaximum": 1000,
             "title": "有效次数"
         }
     },

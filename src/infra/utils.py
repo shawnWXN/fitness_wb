@@ -1,6 +1,3 @@
-import hashlib
-import multiprocessing
-import platform
 import re
 from functools import lru_cache
 
@@ -35,19 +32,6 @@ def resp_failure(status_code, reason, resp_data: dict = None, print_log: bool = 
     if print_log:
         logger.error(f'{result}, {status_code}')
     return sanic_json(result, status=status_code)
-
-
-def number_of_workers():
-    if platform.system().lower() == 'linux':
-        return (multiprocessing.cpu_count() * 2) + 1
-    return 1
-
-
-def md5(str_value):
-    m = hashlib.md5()
-    m.update(str_value.encode('utf8'))
-    return m.hexdigest()
-
 
 
 def snake2camel(snake: str, start_lower: bool = False) -> str:
@@ -94,3 +78,16 @@ def str2base64(s: str) -> str:
 
     # 打印或返回Base64编码的图像数据字符串
     return base64_image
+
+
+def days_bill_description(limit_days):
+    if limit_days < 30:
+        return '半月卡'
+    elif limit_days < 60:
+        return '月卡'
+    elif limit_days < 90:
+        return '双月卡'
+    elif limit_days < 120:
+        return '季卡'
+    else:
+        return '年卡'
