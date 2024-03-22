@@ -112,16 +112,15 @@ class OrderComment(HTTPMethodView):
         if not any([_ in user.staff_roles for _ in [StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value]]):
             assert order.coach_id == user.id, f"OrderModel[{order.id}] no access for user[{user.id}]"
 
-        now_dt_str = get_today_date_time()
+        now_dt_str = datetime.now().strftime('%m/%d')
         this_comment = data.pop(CONST.COMMENT)
 
         data[CONST.ID] = order.id
         data[CONST.COMMENTS] = order.comments or []
-        data[CONST.COMMENTS].append(f"({now_dt_str}) User({user.id},{user.nickname}): {this_comment}")
+        data[CONST.COMMENTS].append(f"({now_dt_str}){user.nickname}: {this_comment}")
         await OrderModel.update_one(data)
 
         member_data = {CONST.ID: member.id, CONST.COMMENTS: member.comments}
-        member_data.setdefault(CONST.COMMENTS, []).append(
-            f"({now_dt_str}) User({user.id},{user.nickname}) Order({order.id}): {this_comment}")
+        member_data.setdefault(CONST.COMMENTS, []).append(f"({now_dt_str}){user.nickname}#{order.id}: {this_comment}")
         await UserModel.update_one(member_data)
         return resp_success()
