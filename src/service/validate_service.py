@@ -110,16 +110,16 @@ course_create_schema = {
         },
         "limit_days": {
             "type": ["integer", "null"],
-            "minimum": 1,
-            "maximum": 1000,
-            "exclusiveMaximum": 1000,
+            "minimum": 0,
+            "maximum": 10000,
+            "exclusiveMaximum": 10000,
             "title": "有效天数"
         },
         "limit_counts": {
             "type": ["integer", "null"],
-            "minimum": 1,
-            "maximum": 1000,
-            "exclusiveMaximum": 1000,
+            "minimum": 0,
+            "maximum": 10000,
+            "exclusiveMaximum": 10000,
             "title": "有效次数"
         }
     },
@@ -318,8 +318,8 @@ def validate_course_create_data(data: dict) -> typing.Tuple[bool, str]:
     if not rst:
         return rst, err_msg
 
-    if any([data.get('limit_days'), data.get('limit_counts')]) and not data.get('bill_type'):
-        return False, f"miss bill_type when limit_days or limit_counts exists"
+    # if any([data.get('limit_days'), data.get('limit_counts')]) and not data.get('bill_type'):
+    #     return False, f"miss bill_type when limit_days or limit_counts exists"
 
     if data.get("bill_type") == BillTypeEnum.DAY.value and not data.get('limit_days'):
         return False, f"miss limit_days when bill_type='{BillTypeEnum.DAY.value}'"
@@ -344,8 +344,8 @@ def validate_course_update_data(data: dict) -> typing.Tuple[bool, str]:
     if not rst:
         return rst, err_msg
 
-    if any([data.get('limit_days'), data.get('limit_counts')]) and not data.get('bill_type'):
-        return False, f"miss bill_type when limit_days or limit_counts exists"
+    # if any([data.get('limit_days'), data.get('limit_counts')]) and not data.get('bill_type'):
+    #     return False, f"miss bill_type when limit_days or limit_counts exists"
 
     if data.get("bill_type") == BillTypeEnum.DAY.value and not data.get('limit_days'):
         return False, f"miss limit_days when bill_type='{BillTypeEnum.DAY.value}'"
