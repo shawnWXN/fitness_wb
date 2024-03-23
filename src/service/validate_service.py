@@ -5,7 +5,7 @@ from datetime import datetime
 from jsonschema import validate, ValidationError, SchemaError
 
 from common.const import CONST
-from common.enum import BillTypeEnum, GenderEnum, OrderStatusEnum, StaffRoleEnum, ExpenseStatusEnum
+from common.enum import BillTypeEnum, OrderStatusEnum, StaffRoleEnum, ExpenseStatusEnum
 from loggers.logger import logger
 
 userprofile_update_schema = {
@@ -25,15 +25,6 @@ userprofile_update_schema = {
             "type": ["string", "null"],
             "title": "头像",
             "minLength": 1
-        },
-        "gender": {
-            "type": "string",
-            "title": "性别",
-            "enum": [  # tips 指定enum后，type列表不再支持null
-                GenderEnum.UNKNOWN.value,
-                GenderEnum.FEMALE.value,
-                GenderEnum.MALE.value,
-            ]
         }
     }
 }

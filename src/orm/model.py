@@ -6,7 +6,7 @@ from tortoise import fields
 from enum import Enum
 
 from common.const import CONST
-from common.enum import GenderEnum, BillTypeEnum, OrderStatusEnum, ExpenseStatusEnum
+from common.enum import BillTypeEnum, OrderStatusEnum, ExpenseStatusEnum
 from infra.date_utils import get_date_time_str
 
 
@@ -63,7 +63,7 @@ class UserModel(BaseModel):
     openid = fields.CharField(max_length=255, unique=True, description="小程序openid")
     phone = fields.CharField(max_length=20, null=True, description="手机号")
     nickname = fields.CharField(max_length=50, null=True, description="微信昵称")
-    gender = fields.CharEnumField(enum_type=GenderEnum, description="性别", max_length=1, null=True)
+    # gender = fields.CharEnumField(enum_type=GenderEnum, description="性别", max_length=1, null=True)
     avatar = fields.CharField(max_length=255, null=True, description="头像")
     staff_roles = fields.JSONField(description="账号权限列表", default=[])
     comments = fields.JSONField(description="备注", default=[])

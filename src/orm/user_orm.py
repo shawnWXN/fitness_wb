@@ -1,28 +1,12 @@
 from functools import reduce
 
-from faker import Faker
 from tortoise.expressions import RawSQL
 from tortoise.queryset import Q
 
 from api import paging
 from common.const import CONST
-from common.enum import StaffRoleEnum, GenderEnum
+from common.enum import StaffRoleEnum
 from orm.model import UserModel
-
-fake = Faker("zh_CN")
-
-
-async def faker_users():
-    count = fake.random_int(1, 15)
-    for _ in range(count):
-
-        prefix = fake.uuid4().split('-')[0]
-        if _ % 3 == 0:
-            await UserModel.create(openid=prefix, staff_roles=[StaffRoleEnum.ADMIN.value, StaffRoleEnum.COACH.value])
-        elif _ % 2 == 0:
-            await UserModel.create(openid=prefix, gender=GenderEnum.MALE.value)
-        else:
-            await UserModel.create(openid=prefix)
 
 
 async def find_users(request) -> dict:

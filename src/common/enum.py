@@ -19,24 +19,6 @@ class StaffRoleEnum(Enum):
     ]
 
 
-class GenderEnum(Enum):
-    UNKNOWN = "0"
-    FEMALE = "2"
-    MALE = "1"
-
-    explain = {
-        UNKNOWN: "未知",
-        FEMALE: "女性",
-        MALE: "男性"
-    }
-
-    iter = [
-        UNKNOWN,
-        FEMALE,
-        MALE
-    ]
-
-
 class BillTypeEnum(Enum):
     DAY = "day"
     COUNT = "count"
