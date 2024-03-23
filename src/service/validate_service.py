@@ -91,7 +91,7 @@ course_create_schema = {
         "description": {
             "type": ["string", "null"],
             "title": "课程详细文字",
-            "minLength": 1
+            # "minLength": 1
         },
         "desc_images": {
             "type": ["array", "null"],
