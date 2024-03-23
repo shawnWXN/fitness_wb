@@ -4,6 +4,7 @@ from api import check_staff, check_authorize
 from common.const import CONST
 from common.enum import StaffRoleEnum, OrderStatusEnum, ExpenseStatusEnum
 from infra.utils import resp_success, resp_failure
+from loggers.logger import logger
 from orm.expense_orm import my_expenses
 from orm.model import UserModel
 from orm.order_orm import my_orders
@@ -57,6 +58,7 @@ class UserProfile(HTTPMethodView):
         :param request:
         :return:
         """
+        logger.info(f"UserProfile return {request.ctx.user.to_dict()}")
         return resp_success(data=request.ctx.user.to_dict())
 
     @staticmethod
