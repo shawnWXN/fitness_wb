@@ -49,7 +49,7 @@ class Order(HTTPMethodView):
         data[CONST.MEMBER_PHONE] = member.phone
         # 根据课程ID，找到课程相关信息
         course: CourseModel = await CourseModel.get_one(id=data[CONST.COURSE_ID])
-        data[CONST.BILL_DESC] = course.bill_desc
+        data[CONST.BILL_TYPE] = course.bill_type
         data[CONST.COURSE_NAME] = course.name
         # 到期时间，默认今天+有效天数+1
         data[CONST.EXPIRE_TIME] = get_datetime_zero(datetime.now() + timedelta(days=course.limit_days + 1))
@@ -78,7 +78,7 @@ class Order(HTTPMethodView):
         if course_id and course_id != order.course_id:
             # 根据课程ID，找到课程相关信息
             course: CourseModel = await CourseModel.get_one(id=course_id)
-            data[CONST.BILL_DESC] = course.bill_desc
+            data[CONST.BILL_TYPE] = course.bill_type
             data[CONST.COURSE_NAME] = course.name
 
         expire_time = data.get(CONST.EXPIRE_TIME)
