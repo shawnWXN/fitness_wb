@@ -31,7 +31,7 @@ class MockSystem(HTTPMethodView):
         for _ in range(15):
             data = {
                 "name": mock.name() + '课程',
-                "intro": mock.sentence(),
+                "intro": mock.sentence() + mock.sentence(),
                 "thumbnail": "http://dummyimage.com/120x60",
                 "bill_type": random.choice(BillTypeEnum.iter.value),
                 "description": mock.paragraph() + mock.paragraph(),
