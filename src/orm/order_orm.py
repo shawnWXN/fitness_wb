@@ -5,8 +5,7 @@ from tortoise.queryset import Q
 
 from api import paging
 from common.const import CONST
-from common.enum import StaffRoleEnum
-from orm.model import OrderModel, UserModel
+from orm.model import OrderModel
 
 
 async def my_orders(request) -> dict:
@@ -21,7 +20,7 @@ async def my_orders(request) -> dict:
     query = OrderModel.filter(member_id=request.ctx.user.id)  # 首先过滤自己的订单
 
     if search:
-        query = query.filter(Q(course_name__icontains=search) | Q(coach_name__icontains=search))
+        query = query.filter(course_name__icontains=search)
 
     # 根据状态过滤
     if status:
@@ -46,19 +45,21 @@ async def find_orders(request) -> dict:
     create_date_start: datetime = request.ctx.args.get(CONST.CREATE_DATE_START)
     create_date_end: datetime = request.ctx.args.get(CONST.CREATE_DATE_END)
 
-    user: UserModel = request.ctx.user
-    role = max(user.staff_roles) if user.staff_roles else 0
+    # user: UserModel = request.ctx.user
+    # role = max(user.staff_roles) if user.staff_roles else 0
 
     query = OrderModel.filter()
-    if StaffRoleEnum.COACH.value == role:
-        query = query.filter(coach_id=user.id)
+    # if StaffRoleEnum.COACH.value == role:
+    #     query = query.filter(coach_id=user.id)
     if search:
         # 如果是order_no
-        if re.match(r'^[0-9a-f]{32}$', search):
+        if re.match(r'^[a-zA-Z0-9]{22}$', search):
             query = query.filter(order_no=search)
+        elif search.isdigit():
+            query = query.filter(member_phone__icontains=search)
         else:
             query = query.filter(
-                Q(member_name__icontains=search) | Q(coach_name__icontains=search) | Q(course_name__icontains=search))
+                Q(member_name__icontains=search) | Q(course_name__icontains=search))
 
     if status:
         query = query.filter(status__in=status.split(','))

@@ -66,6 +66,7 @@ user_update_schema = {
 
 course_create_schema = {
     "type": "object",
+    "additionalProperties": False,
     "properties": {
         "name": {
             "type": "string",
@@ -77,11 +78,11 @@ course_create_schema = {
             "title": "课程简介",
             "minLength": 1
         },
-        "coach_id": {
-            "type": "integer",
-            "title": "教练编号ID",
-            "minimum": 1,
-        },
+        # "coach_id": {
+        #     "type": "integer",
+        #     "title": "教练编号ID",
+        #     "minimum": 1,
+        # },
         "thumbnail": {
             "type": "string",
             "title": "课程封面图",
@@ -109,14 +110,17 @@ course_create_schema = {
             "title": "计费类型"
         },
         "limit_days": {
-            "type": ["integer", "null"],
-            "minimum": 0,
-            "maximum": 1000,
-            "exclusiveMaximum": 1000,
+            "type": "integer",
+            "enum": [
+                0, 30, 90, 180, 365
+            ],
+            # "minimum": 0,
+            # "maximum": 1000,
+            # "exclusiveMaximum": 1000,
             "title": "有效天数"
         },
         "limit_counts": {
-            "type": ["integer", "null"],
+            "type": "integer",
             "minimum": 0,
             "maximum": 1000,
             "exclusiveMaximum": 1000,
@@ -126,7 +130,7 @@ course_create_schema = {
     "required": [
         "name",
         "intro",
-        "coach_id",
+        # "coach_id",
         "thumbnail",
         "bill_type"
     ]
@@ -135,6 +139,11 @@ course_create_schema = {
 order_create_schema = {
     "type": "object",
     "properties": {
+        "member_id": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "会员ID"
+        },
         "course_id": {
             "type": "integer",
             "minimum": 1,
@@ -158,6 +167,7 @@ order_create_schema = {
         }
     },
     "required": [
+        "member_id",
         "course_id",
         "amount",
         "receipt",
@@ -176,7 +186,6 @@ order_update_schema_first = {
             "type": "string",
             "enum": [
                 OrderStatusEnum.ACTIVATED.value,
-                OrderStatusEnum.REJECT.value,
                 OrderStatusEnum.REFUND.value,
             ],
             "title": "订单状态"
@@ -272,7 +281,8 @@ expense_update_schema = {
 }
 
 
-def validate_order_expense_get_args(request, status_enum: typing.Type[OrderStatusEnum] | typing.Type[ExpenseStatusEnum]):
+def validate_order_expense_get_args(request,
+                                    status_enum: typing.Type[OrderStatusEnum] | typing.Type[ExpenseStatusEnum]):
     status: str = request.args.get(CONST.STATUS)
     create_date_start: str = request.args.get(CONST.CREATE_DATE_START)
     create_date_end: str = request.args.get(CONST.CREATE_DATE_END)

@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 
 from sanic.views import HTTPMethodView
 
-from api import check_authorize, check_staff
+from api import check_staff
 from common.const import CONST
 from common.enum import StaffRoleEnum, OrderStatusEnum
-from infra.date_utils import get_today_date_time, get_datetime_zero, get_date_time_by_str
+from infra.date_utils import get_datetime_zero, get_date_time_by_str
 from infra.utils import resp_failure, resp_success
 from orm.model import CourseModel, OrderModel, UserModel
 from orm.order_orm import find_orders
@@ -15,7 +15,7 @@ from service.validate_service import validate_order_create_data, validate_order_
 
 class Order(HTTPMethodView):
     @staticmethod
-    @check_staff(StaffRoleEnum.iter.value)
+    @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
     async def get(request):
         """
         查看所有订单
@@ -29,10 +29,10 @@ class Order(HTTPMethodView):
         return resp_success(await find_orders(request))
 
     @staticmethod
-    @check_authorize(exclude_staff=True)
+    @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
     async def post(request):
         """
-        开通/续费会员
+        开通会员
         :param request:
         :return:
         """
@@ -41,20 +41,19 @@ class Order(HTTPMethodView):
         if not rst:
             return resp_failure(400, err_msg)
 
-        data[CONST.MEMBER_ID] = request.ctx.user.id
-        data[CONST.MEMBER_NAME] = request.ctx.user.nickname
+        member: UserModel = await UserModel.get_one(id=data[CONST.MEMBER_ID])
+        if not member.phone or not member.nickname:
+            return resp_failure(400, "会员还未授权")
+
+        data[CONST.MEMBER_NAME] = member.nickname
+        data[CONST.MEMBER_PHONE] = member.phone
         # 根据课程ID，找到课程相关信息
-        course: CourseModel = await CourseModel.get_one(id=data[CONST.COURSE_ID])  # 可能404（直接删除、教练解聘级联删除）
-        # 补全教练信息、课程信息、计费类型、有效天数和次数
+        course: CourseModel = await CourseModel.get_one(id=data[CONST.COURSE_ID])
         data[CONST.COURSE_NAME] = course.name
-        data[CONST.COACH_ID] = course.coach_id
-        data[CONST.COACH_NAME] = course.coach_name
-        # data[CONST.BILL_TYPE] = course.bill_type
-        # data[CONST.LIMIT_DAYS] = course.limit_days
-        # data[CONST.LIMIT_COUNTS] = course.limit_counts
-        # # 到期时间，默认今天+有效天数+1
+        # 到期时间，默认今天+有效天数+1
         data[CONST.EXPIRE_TIME] = get_datetime_zero(datetime.now() + timedelta(days=course.limit_days + 1))
-        data[CONST.SURPLUS_COUNTS] = course.limit_counts  # 剩余次数，默认跟有效次数相同
+        # 剩余次数，默认跟有效次数相同
+        data[CONST.SURPLUS_COUNTS] = course.limit_counts
 
         order = await OrderModel.create(**data)
         return resp_success(id=order.id)
@@ -63,7 +62,7 @@ class Order(HTTPMethodView):
     @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
     async def put(request):
         """
-        更新订单(非pending的order，更新按钮叫“更新并激活”)
+        退款/更新
         :param request:
         :return:
         """
@@ -77,10 +76,8 @@ class Order(HTTPMethodView):
         course_id = data.get(CONST.COURSE_ID)
         if course_id and course_id != order.course_id:
             # 根据课程ID，找到课程相关信息
-            course: CourseModel = await CourseModel.get_one(id=course_id)  # 可能404（直接删除、教练解聘级联删除）
+            course: CourseModel = await CourseModel.get_one(id=course_id)
             data[CONST.COURSE_NAME] = course.name
-            data[CONST.COACH_ID] = course.coach_id
-            data[CONST.COACH_NAME] = course.coach_name
 
         expire_time = data.get(CONST.EXPIRE_TIME)
         if expire_time and get_date_time_by_str(expire_time + ' 00:00:00') > datetime.now():
@@ -94,7 +91,7 @@ class Order(HTTPMethodView):
 
 class OrderComment(HTTPMethodView):
     @staticmethod
-    @check_staff(StaffRoleEnum.iter.value)
+    @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
     async def post(request):
         """
         新增订单备注（也会加一条用户备注）
@@ -109,8 +106,8 @@ class OrderComment(HTTPMethodView):
         order: OrderModel = await OrderModel.get_one(order_no=data.pop(CONST.ORDER_NO))
         member: UserModel = await UserModel.get_one(id=order.member_id)
         user: UserModel = request.ctx.user
-        if not any([_ in user.staff_roles for _ in [StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value]]):
-            assert order.coach_id == user.id, f"OrderModel[{order.id}] no access for user[{user.id}]"
+        # if not any([_ in user.staff_roles for _ in [StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value]]):
+        #     assert order.coach_id == user.id, f"OrderModel[{order.id}] no access for user[{user.id}]"
 
         now_dt_str = datetime.now().strftime('%m/%d')
         this_comment = data.pop(CONST.COMMENT)

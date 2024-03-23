@@ -1,5 +1,3 @@
-from tortoise.queryset import Q
-
 from api import paging
 from common.const import CONST
 from orm.model import CourseModel
@@ -15,7 +13,7 @@ async def find_courses(request) -> dict:
     if _id:
         query = query.filter(id=_id)
     elif search:
-        query = query.filter(Q(name__icontains=search) | Q(coach_name__icontains=search))
+        query = query.filter(name__icontains=search)
 
     return await paging(request, query)
 

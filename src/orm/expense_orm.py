@@ -14,6 +14,7 @@ async def my_expenses(request) -> dict:
     我的消费记录列表
     """
     order_no: str = request.args.get(CONST.ORDER_NO)
+    search: str = request.args.get(CONST.SEARCH)
     status: str = request.args.get(CONST.STATUS)
     create_date_start: datetime = request.ctx.args.get(CONST.CREATE_DATE_START)
     create_date_end: datetime = request.ctx.args.get(CONST.CREATE_DATE_END)
@@ -22,6 +23,9 @@ async def my_expenses(request) -> dict:
 
     if order_no:
         query = query.filter(order_no=order_no)
+
+    if search:
+        query = query.filter(Q(course_name__icontains=search) | Q(coach_name__icontains=search))
 
     # 根据状态过滤
     if status:
@@ -54,8 +58,10 @@ async def find_expenses(request) -> dict:
         query = query.filter(coach_id=user.id)
     if search:
         # 如果是order_no
-        if re.match(r'^[0-9a-f]{32}$', search):
+        if re.match(r'^[a-zA-Z0-9]{22}$', search):
             query = query.filter(order_no=search)
+        elif search.isdigit():
+            query = query.filter(member_phone__icontains=search)
         else:
             query = query.filter(
                 Q(member_name__icontains=search) | Q(coach_name__icontains=search) | Q(course_name__icontains=search))

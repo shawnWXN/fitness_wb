@@ -14,7 +14,7 @@ async def paging(request: Request, query: QuerySet, order_by: tuple = ('-id',)) 
         page_size = int(page_size)
         page_size = page_size if page_size <= 100 else 100
     else:
-        page_size = 50
+        page_size = 10
 
     if page_num and page_num.isdigit():
         page_num = int(page_num) or 1
@@ -30,7 +30,7 @@ async def paging(request: Request, query: QuerySet, order_by: tuple = ('-id',)) 
         'page': page_num if count else 0,
         'size': len(items),
         'pages': (1 if count else 0) if count <= page_size else (
-            count // page_size if count % page_size else count // page_size + 1),
+            count // page_size + 1 if count % page_size else count // page_size),
         'items': items
     }
 

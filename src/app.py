@@ -96,7 +96,7 @@ def run_web_service():
     options = {
         "DEBUG": False,
         "ACCESS_LOG": False,
-        "KEEP_ALIVE_TIMEOUT": 15,  # Nginx performance tuning guidelines uses keepalive = 15 seconds
+        "KEEP_ALIVE_TIMEOUT": 15,  # Nginx tuning guidelines uses keepalive = 15 seconds
         "FALLBACK_ERROR_FORMAT": "json",
         "REAL_IP_HEADER": "X-Real-IP",
         "PROXIES_COUNT": 1

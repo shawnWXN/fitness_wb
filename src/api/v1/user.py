@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sanic.views import HTTPMethodView
 
 from api import check_staff, check_authorize
@@ -32,8 +30,7 @@ class User(HTTPMethodView):
         if staff_roles and set(staff_roles.split(',')) - allowed_roles:
             return resp_failure(400, f'`staff_roles` 不在指定范围')
 
-        pagination = await find_users(request)
-        return resp_success(pagination)
+        return resp_success(await find_users(request))
 
     @staticmethod
     @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
@@ -43,7 +40,6 @@ class User(HTTPMethodView):
         :param request:
         :return:
         """
-        # TODO 取消教练，对应课程也删除 + 提醒管理员或店主去修改在期订单的归属教练
         data = request.json or dict()
         rst, err_msg = validate_user_update_data(data)
         if not rst:

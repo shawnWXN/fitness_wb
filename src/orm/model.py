@@ -72,15 +72,16 @@ class UserModel(BaseModel):
 class CourseModel(BaseModel):
     class Meta:
         table = "course"
-        unique_together = [("name", "coach_id")]
+        # unique_together = [("name", "coach_id")]
 
-    name = fields.CharField(max_length=255, description="课程名")
+    name = fields.CharField(unique=True, max_length=255, description="课程名")
     intro = fields.TextField(description="课程简介")
-    coach_id = fields.IntField(description="教练编号ID")
-    coach_name = fields.CharField(max_length=255, description="教练名")
+    # coach_id = fields.IntField(description="教练编号ID")
+    # coach_name = fields.CharField(max_length=255, description="教练名")
     thumbnail = fields.CharField(max_length=255, description="课程封面图")
     description = fields.TextField(null=True, description="课程详细文字")
     desc_images = fields.JSONField(description="课程详细图片", default=[])  # JSON field to store list of images
+    bill_desc = fields.CharField(max_length=255, description="计费描述")
     bill_type = fields.CharEnumField(BillTypeEnum, description="计费类型")
     limit_days = fields.IntField(description="有效天数")
     limit_counts = fields.IntField(description="有效次数")
@@ -92,8 +93,9 @@ class OrderModel(BaseModel):
 
     member_id = fields.IntField(description="会员编号ID")
     member_name = fields.CharField(max_length=255, description="会员名")
-    coach_id = fields.IntField(description="教练编号ID")
-    coach_name = fields.CharField(max_length=255, description="教练名")
+    member_phone = fields.CharField(max_length=20, description="会员手机号")
+    # coach_id = fields.IntField(description="教练编号ID")
+    # coach_name = fields.CharField(max_length=255, description="教练名")
     course_id = fields.IntField(description="课程编号ID")
     course_name = fields.CharField(max_length=255, description="课程名")
     # bill_type = fields.CharEnumField(BillTypeEnum, description="计费类型")
@@ -104,7 +106,7 @@ class OrderModel(BaseModel):
     amount = fields.IntField(description="订单金额")
     receipt = fields.CharField(max_length=255, description="付款截图")
     contract = fields.CharField(null=True, max_length=255, description="合同文件")
-    status = fields.CharEnumField(OrderStatusEnum, description="订单状态", default=OrderStatusEnum.PENDING.value)
+    status = fields.CharEnumField(OrderStatusEnum, description="订单状态", default=OrderStatusEnum.ACTIVATED.value)
     order_no = fields.CharField(unique=True, max_length=255, description="订单编号", default=lambda: shortuuid.uuid())
     comments = fields.JSONField(description="备注", default=[])
 
@@ -115,6 +117,7 @@ class ExpenseModel(BaseModel):
 
     member_id = fields.IntField(description="会员编号ID")
     member_name = fields.CharField(max_length=255, description="会员名")
+    member_phone = fields.CharField(max_length=20, description="会员手机号")
     coach_id = fields.IntField(description="教练编号ID")
     coach_name = fields.CharField(max_length=255, description="教练名")
     course_id = fields.IntField(description="课程编号ID")

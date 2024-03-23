@@ -78,6 +78,7 @@ class _Const(object):
     COACH_ID = 'coach_id'
     COACH_NAME = 'coach_name'
     BILL_TYPE = 'bill_type'
+    BILL_DESC = 'bill_desc'
     LIMIT_DAYS = 'limit_days'
     LIMIT_COUNTS = 'limit_counts'
 
@@ -105,6 +106,7 @@ class _Const(object):
 
     MEMBER_ID = "member_id"
     MEMBER_NAME = "member_name"
+    MEMBER_PHONE = "member_phone"
 
     EXPIRE_TIME = 'expire_time'
     SURPLUS_COUNTS = 'surplus_counts'

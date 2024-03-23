@@ -53,23 +53,23 @@ class BillTypeEnum(Enum):
 
 
 class OrderStatusEnum(Enum):
-    PENDING = "pending"
-    REJECT = "reject"
+    # PENDING = "pending"
+    # REJECT = "reject"
     ACTIVATED = "activated"
     EXPIRED = "expired"
     REFUND = "refund"
 
     explain = {
-        PENDING: "待审核",
-        REJECT: "审核拒绝",
+        # PENDING: "待审核",
+        # REJECT: "审核拒绝",
         ACTIVATED: "审核通过",
         EXPIRED: "已过期",
         REFUND: "已退款"
     }
 
     iter = [
-        PENDING,
-        REJECT,
+        # PENDING,
+        # REJECT,
         ACTIVATED,
         EXPIRED,
         REFUND

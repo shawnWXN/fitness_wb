@@ -81,13 +81,14 @@ def str2base64(s: str) -> str:
 
 
 def days_bill_description(limit_days):
-    if limit_days < 30:
-        return '半月卡'
-    elif limit_days < 60:
-        return '月卡'
-    elif limit_days < 90:
-        return '双月卡'
-    elif limit_days < 120:
-        return '季卡'
-    else:
-        return '年卡'
+    match limit_days:
+        case 30:
+            return '月卡'
+        case 90:
+            return '季卡'
+        case 180:
+            return '半年卡'
+        case 365:
+            return '年卡'
+        case _:
+            assert False, "Invalid limit_days"

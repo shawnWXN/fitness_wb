@@ -17,7 +17,7 @@ class Expense(HTTPMethodView):
     @check_staff(StaffRoleEnum.iter.value)
     async def get(request):
         """
-        查看所有订单
+        查看所有核销记录
         :param request:
         :return:
         """
@@ -40,20 +40,25 @@ class Expense(HTTPMethodView):
             return resp_failure(400, "缺少必要参数")
 
         order: OrderModel = await OrderModel.get_one(order_no=order_no)
-        await prepare_check(order, request.ctx.user)
+        # 判断订单状态是否activated、还在有效期、剩余次数大于零
+        if order.status != OrderStatusEnum.ACTIVATED or order.expire_time <= datetime.now(
+                pytz.timezone('Asia/Shanghai')) or order.surplus_counts <= 0:
+            raise AssertionError(f"OrderModel[{order.order_no}] no access for activated")
+
         # 组装数据
         data = dict(
             member_id=order.member_id,
             member_name=order.member_name,
-            coach_id=order.coach_id,
-            coach_name=order.coach_name,
+            member_phne=order.member_phone,
+            coach_id=request.ctx.user.id,
+            coach_name=request.ctx.user.nickname,
             course_id=order.course_id,
             course_name=order.course_name,
             order_no=order.order_no,
         )
         expense: ExpenseModel = await ExpenseModel.create(**data)
         # 订单剩余次数减一
-        order.surplus_counts -= 1  # TODO 需要设置一天最多扫N次
+        order.surplus_counts -= 1  # TODO 需要设置一天最多扫3次
         await order.save()
         return resp_success(id=expense.id)
 
@@ -61,7 +66,7 @@ class Expense(HTTPMethodView):
     @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
     async def put(request):
         """
-        店主/管理员核销
+        店主/管理员审核核销
         :param request:
         :return:
         """
@@ -103,22 +108,6 @@ class ExpenseQrcode(HTTPMethodView):
             return resp_failure(400, "缺少必要参数")
 
         order: OrderModel = await OrderModel.get_one(order_no=order_no)
-        await prepare_check(order, request.ctx.user)
-        return resp_success(qrcode=str2base64(order_no))
-
-
-async def prepare_check(order: OrderModel, current_user: UserModel):
-    # order: OrderModel = await OrderModel.get_one(order_no=order_no)
-    # 判断订单状态是否activated、还在有效期、剩余次数大于零
-    if order.status != OrderStatusEnum.ACTIVATED or order.expire_time <= datetime.now(
-            pytz.timezone('Asia/Shanghai')) or order.surplus_counts <= 0:
-        raise AssertionError(f"OrderModel[{order.order_no}] no access for activated")
-
-    if StaffRoleEnum.COACH.value in current_user.staff_roles:
-        # 判断订单是否为当前教练的
-        coach: UserModel = await UserModel.get_one(id=order.coach_id)
-        assert coach.id == current_user.id, f"OrderModel[{order.order_no}] no access for user[{current_user.id}]"
-    else:
-        # 判断订单是否为当前会员的
         member: UserModel = await UserModel.get_one(id=order.member_id)
-        assert member.id == current_user.id, f"OrderModel[{order.order_no}] no access for user[{current_user.id}]"
+        assert member.id == request.ctx.user.id, f"OrderModel[{order.order_no}] no access for user[{request.ctx.user.id}]"
+        return resp_success(qrcode=str2base64(order_no))
