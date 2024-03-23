@@ -49,7 +49,7 @@ class Expense(HTTPMethodView):
         data = dict(
             member_id=order.member_id,
             member_name=order.member_name,
-            member_phne=order.member_phone,
+            member_phone=order.member_phone,
             coach_id=request.ctx.user.id,
             coach_name=request.ctx.user.nickname,
             course_id=order.course_id,

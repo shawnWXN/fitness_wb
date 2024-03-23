@@ -31,7 +31,7 @@ class MockSystem(HTTPMethodView):
         for _ in range(15):
             data = {
                 "name": mock.name() + '课程',
-                "intro": mock.sentence(),
+                "intro": mock.sentence() + mock.sentence(),
                 "thumbnail": "http://dummyimage.com/120x60",
                 "bill_type": random.choice(BillTypeEnum.iter.value),
                 "description": mock.paragraph() + mock.paragraph(),
@@ -60,7 +60,7 @@ class MockSystem(HTTPMethodView):
 
                 # 根据课程ID，找到课程相关信息
                 course: CourseModel = await CourseModel.get_one(id=dd[CONST.COURSE_ID])
-                dd[CONST.BILL_TYPE] = course.bill_type
+                dd[CONST.BILL_DESC] = course.bill_desc
                 dd[CONST.COURSE_NAME] = course.name
                 # 到期时间，默认今天+有效天数+1
                 dd[CONST.EXPIRE_TIME] = get_datetime_zero(datetime.now() + timedelta(days=course.limit_days + 1))

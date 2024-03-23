@@ -98,7 +98,7 @@ class OrderModel(BaseModel):
     # coach_name = fields.CharField(max_length=255, description="教练名")
     course_id = fields.IntField(description="课程编号ID")
     course_name = fields.CharField(max_length=255, description="课程名")
-    bill_type = fields.CharEnumField(BillTypeEnum, description="计费类型")
+    bill_desc = fields.CharField(max_length=255, description="计费描述")
     # limit_days = fields.IntField(description="有效天数")
     # limit_counts = fields.IntField(description="有效次数")
     surplus_counts = fields.IntField(description="剩余次数")
