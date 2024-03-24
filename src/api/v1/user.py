@@ -58,7 +58,7 @@ class UserProfile(HTTPMethodView):
         :param request:
         :return:
         """
-        logger.info(f"UserProfile return {request.ctx.user.to_dict()}")
+        # logger.info(f"UserProfile return {request.ctx.user.to_dict()}")
         return resp_success(data=request.ctx.user.to_dict())
 
     @staticmethod

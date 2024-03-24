@@ -113,7 +113,7 @@ async def prepare_data(data: dict):
     # 计次卡设置潜在超时（当前默认设置一年）
     # 计时卡设置潜在次数（当前默认每天三次）
     if data.get(CONST.BILL_TYPE) == BillTypeEnum.DAY.value:
-        if not not data.get(CONST.LIMIT_COUNTS):
+        if not data.get(CONST.LIMIT_COUNTS):
             data[CONST.LIMIT_COUNTS] = data[CONST.LIMIT_DAYS] * 3
         data[CONST.BILL_DESC] = days_bill_description(data[CONST.LIMIT_DAYS])
 

@@ -67,6 +67,12 @@ async def before_request(request):
     request.ctx.user = user
 
 
+# 定义响应中间件
+@app.middleware("response")
+async def custom_header(request, response):
+    response.headers["Sanic-App-Version"] = "03242010"
+
+
 @app.listener("before_server_start")
 async def before_server_start(app, loop):
     aps.run(loop)
