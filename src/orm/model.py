@@ -7,7 +7,7 @@ from enum import Enum
 
 from common.const import CONST
 from common.enum import BillTypeEnum, OrderStatusEnum, ExpenseStatusEnum
-from infra.date_utils import get_date_time_str
+from infra.date_utils import get_date_time_str, get_date_str
 
 
 class BaseModel(Model):
@@ -49,7 +49,10 @@ class BaseModel(Model):
             attr_name = c if isinstance(c, str) else c.name
             value = getattr(self, attr_name)
             if isinstance(value, datetime):
-                value = get_date_time_str(value)
+                if attr_name == 'expire_time':
+                    value = get_date_str(value)
+                else:
+                    value = get_date_time_str(value)
             if isinstance(value, Enum):
                 value = value.value
             d[attr_name] = value
@@ -122,6 +125,7 @@ class ExpenseModel(BaseModel):
     coach_name = fields.CharField(max_length=255, description="教练名")
     course_id = fields.IntField(description="课程编号ID")
     course_name = fields.CharField(max_length=255, description="课程名")
-    status = fields.CharEnumField(ExpenseStatusEnum, description="消费记录状态", default=ExpenseStatusEnum.PENDING.value)
+    status = fields.CharEnumField(ExpenseStatusEnum, description="消费记录状态",
+                                  default=ExpenseStatusEnum.PENDING.value)
     order_no = fields.CharField(max_length=255, description="订单编号")
     # comments = fields.JSONField(description="备注", default=[])
