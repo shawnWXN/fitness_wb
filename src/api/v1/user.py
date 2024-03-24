@@ -29,7 +29,7 @@ class User(HTTPMethodView):
         allowed_roles.add('null')
 
         if staff_roles and set(staff_roles.split(',')) - allowed_roles:
-            return resp_failure(400, f'`staff_roles` 不在指定范围')
+            return resp_failure(400, f'`员工角色` 不在指定范围')
 
         return resp_success(await find_users(request))
 

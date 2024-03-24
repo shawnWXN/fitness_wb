@@ -23,3 +23,8 @@ async def find_courses(request) -> dict:
     #     query = query.filter(Q(name__icontains=search) | Q(coach_name__icontains=search))
 
     # return await paging(request, query)
+
+
+async def pk_thumbnail_map() -> dict:
+    courses = await CourseModel.all()
+    return {course.id: course.thumbnail for course in courses}

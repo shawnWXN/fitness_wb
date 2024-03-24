@@ -5,6 +5,7 @@ from tortoise.queryset import Q
 
 from api import paging
 from common.const import CONST
+from orm.course_orm import pk_thumbnail_map
 from orm.model import OrderModel
 
 
@@ -33,7 +34,12 @@ async def my_orders(request) -> dict:
     if create_date_end:
         query = query.filter(create_time__lt=(create_date_end + timedelta(days=1)).strftime(date_format))  # 要加一天
 
-    return await paging(request, query)
+    pagination = await paging(request, query)
+    pk_thumbnail_dict = await pk_thumbnail_map()
+    for item in pagination['items']:
+        item['thumbnail'] = pk_thumbnail_dict.get(item['id'])
+
+    return pagination
 
 
 async def find_orders(request) -> dict:

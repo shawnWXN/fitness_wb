@@ -30,7 +30,7 @@ class GlobalErrorHandler(ErrorHandler):
             if "not found" in exc.args[-1]:
                 return resp_failure(404, "记录不存在")
             if "no access" in exc.args[-1]:
-                return resp_failure(403, "记录访问受限")
+                return resp_failure(403, "您的权限不足以操作")
         # You custom error handling logic...
         return super().default(request, exc)
 
@@ -48,7 +48,7 @@ async def before_request(request):
     log_msg = f"{request.method} {request.path}, args:{request.args}, body:{body}"
     if not request.route:
         logger.warning(log_msg + ", status_code 404.")  # 404时，return后将直接到ErrorHandler
-        return resp_failure(404, f"Requested URL {request.path} not found")
+        return resp_failure(404, f"路径不存在")
 
     real_id = request.headers.get('x-wx-openid') or None
     mock_id = request.headers.get('x-dev-openid') or None
@@ -59,7 +59,7 @@ async def before_request(request):
 
     if not openid:
         logger.warning(log_msg + ", status_code 400.")
-        return resp_failure(400, f"not found openid in headers.")
+        return resp_failure(400, f"not found openid.")
 
     user, _ = await UserModel.get_or_create(openid=openid)
     user_info = f", user[id={user.id},openid={user.openid},role={user.staff_roles}], args:"

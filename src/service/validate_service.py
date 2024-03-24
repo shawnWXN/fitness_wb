@@ -280,7 +280,7 @@ def validate_order_expense_get_args(request,
 
     # 要求1: 校验status
     if status and set(status.split(',')) - set(status_enum.iter.value):
-        return False, f"`status` 不在指定范围"
+        return False, f"`状态` 不在指定范围"
 
     # 要求2: 校验日期格式
     request.ctx.args = dict()
@@ -296,12 +296,12 @@ def validate_order_expense_get_args(request,
             request.ctx.args[CONST.CREATE_DATE_END] = end_date  # 这里改str为datetime.datetime
     except ValueError:
         # 如果转换失败，说明日期格式不正确
-        return False, f"`create_date_start` or `create_date_end` 正则匹配失败"
+        return False, f"`开始时间`或`结束时间`模式匹配失败"
 
     # 要求3: 校验create_date_end是否大于等于create_date_start
     if create_date_start and create_date_end:
         if end_date < start_date:  # noqa
-            return False, f"`create_date_end`不得小于`create_date_start`"
+            return False, f"`结束时间`不得小于`开始时间`"
 
     return True, None
 
@@ -323,10 +323,10 @@ def validate_course_create_data(data: dict) -> typing.Tuple[bool, str]:
     #     return False, f"miss bill_type when limit_days or limit_counts exists"
 
     if data.get("bill_type") == BillTypeEnum.DAY.value and not data.get('limit_days'):
-        return False, f"miss limit_days when bill_type='{BillTypeEnum.DAY.value}'"
+        return False, f"包时模式的课程需填写`有效天数`"
 
     if data.get("bill_type") == BillTypeEnum.COUNT.value and not data.get('limit_counts'):
-        return False, f"miss limit_counts when bill_type='{BillTypeEnum.COUNT.value}'"
+        return False, f"计次模式的课程需填写`有效次数`"
 
     return True, ''
 
@@ -349,10 +349,10 @@ def validate_course_update_data(data: dict) -> typing.Tuple[bool, str]:
     #     return False, f"miss bill_type when limit_days or limit_counts exists"
 
     if data.get("bill_type") == BillTypeEnum.DAY.value and not data.get('limit_days'):
-        return False, f"miss limit_days when bill_type='{BillTypeEnum.DAY.value}'"
+        return False, f"包时模式的课程需填写`有效天数`"
 
     if data.get("bill_type") == BillTypeEnum.COUNT.value and not data.get('limit_counts'):
-        return False, f"miss limit_counts when bill_type='{BillTypeEnum.COUNT.value}'"
+        return False, f"计次模式的课程需填写`有效次数`"
 
     return True, ''
 
@@ -400,7 +400,7 @@ def __parse_error_msg(e: ValidationError, schema: dict):
             err_msg = f'`{description}` 不符合{k}模式组合'
 
     else:
-        description = (schema.get(CONST.DESCRIPTION) or schema.get(CONST.TITLE)) or ".".join(map(str, e.absolute_path))
+        description = (e.schema.get(CONST.DESCRIPTION) or e.schema.get(CONST.TITLE)) or ".".join(map(str, e.absolute_path))
         err_msg = e.schema.get(CONST.ERR_MSG, {}).get(e.validator, '')
         if err_msg:
             err_msg = err_msg if err_msg.startswith(description) else f'`{description}`{err_msg}'
@@ -424,7 +424,7 @@ def __parse_error_msg(e: ValidationError, schema: dict):
             elif e.validator == CONST.SCHEMA_CONST:
                 err_msg = f"`{description}` 不等于预设值"
             elif e.validator == CONST.PATTERN:
-                err_msg = f"`{description}` 正则匹配失败"
+                err_msg = f"`{description}` 模式匹配失败"
 
     return err_msg
 
