@@ -122,8 +122,8 @@ class _Const(object):
     TRUE_STATUS = "T"
     FALSE_STATUS = "F"
 
-    CREATE_DATE_START = 'create_date_start'
-    CREATE_DATE_END = 'create_date_end'
+    START_DT = 'start_dt'
+    END_DT = 'end_dt'
 
     CREATE_TIME = 'create_time'
     UPDATE_TIME = 'update_time'

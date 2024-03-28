@@ -275,8 +275,8 @@ expense_update_schema = {
 def validate_order_expense_get_args(request,
                                     status_enum: typing.Type[OrderStatusEnum] | typing.Type[ExpenseStatusEnum]):
     status: str = request.args.get(CONST.STATUS)
-    create_date_start: str = request.args.get(CONST.CREATE_DATE_START)
-    create_date_end: str = request.args.get(CONST.CREATE_DATE_END)
+    create_date_start: str = request.args.get(CONST.START_DT)
+    create_date_end: str = request.args.get(CONST.END_DT)
 
     # 要求1: 校验status
     if status and set(status.split(',')) - set(status_enum.iter.value):
@@ -289,11 +289,11 @@ def validate_order_expense_get_args(request,
         if create_date_start:
             # 尝试将字符串转换为日期对象
             start_date = datetime.strptime(create_date_start, date_format)
-            request.ctx.args[CONST.CREATE_DATE_START] = start_date  # 这里改str为datetime.datetime
+            request.ctx.args[CONST.START_DT] = start_date  # 这里改str为datetime.datetime
         if create_date_end:
             # 尝试将字符串转换为日期对象
             end_date = datetime.strptime(create_date_end, date_format)
-            request.ctx.args[CONST.CREATE_DATE_END] = end_date  # 这里改str为datetime.datetime
+            request.ctx.args[CONST.END_DT] = end_date  # 这里改str为datetime.datetime
     except ValueError:
         # 如果转换失败，说明日期格式不正确
         return False, f"`开始时间`或`结束时间`模式匹配失败"
@@ -400,7 +400,8 @@ def __parse_error_msg(e: ValidationError, schema: dict):
             err_msg = f'`{description}` 不符合{k}模式组合'
 
     else:
-        description = (e.schema.get(CONST.DESCRIPTION) or e.schema.get(CONST.TITLE)) or ".".join(map(str, e.absolute_path))
+        description = (e.schema.get(CONST.DESCRIPTION) or e.schema.get(CONST.TITLE)) or ".".join(
+            map(str, e.absolute_path))
         err_msg = e.schema.get(CONST.ERR_MSG, {}).get(e.validator, '')
         if err_msg:
             err_msg = err_msg if err_msg.startswith(description) else f'`{description}`{err_msg}'

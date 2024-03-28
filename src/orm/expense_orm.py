@@ -16,8 +16,8 @@ async def my_expenses(request) -> dict:
     order_no: str = request.args.get(CONST.ORDER_NO)
     search: str = request.args.get(CONST.SEARCH)
     status: str = request.args.get(CONST.STATUS)
-    create_date_start: datetime = request.ctx.args.get(CONST.CREATE_DATE_START)
-    create_date_end: datetime = request.ctx.args.get(CONST.CREATE_DATE_END)
+    create_date_start: datetime = request.ctx.args.get(CONST.START_DT)
+    create_date_end: datetime = request.ctx.args.get(CONST.END_DT)
 
     query = ExpenseModel.filter(member_id=request.ctx.user.id)  # 首先过滤自己的
 
@@ -47,8 +47,8 @@ async def find_expenses(request) -> dict:
     """
     search: str = request.args.get(CONST.SEARCH)
     status: str = request.args.get(CONST.STATUS)
-    create_date_start: datetime = request.ctx.args.get(CONST.CREATE_DATE_START)
-    create_date_end: datetime = request.ctx.args.get(CONST.CREATE_DATE_END)
+    create_date_start: datetime = request.ctx.args.get(CONST.START_DT)
+    create_date_end: datetime = request.ctx.args.get(CONST.END_DT)
 
     user: UserModel = request.ctx.user
     role = max(user.staff_roles) if user.staff_roles else 0
