@@ -106,7 +106,7 @@ class CourseConsult(HTTPMethodView):
         #         }
         #     )
 
-        return resp_success(data={'phone': '18378459023'})
+        return resp_success(data={'phone': '19318578554'})
 
 
 async def prepare_data(data: dict):
