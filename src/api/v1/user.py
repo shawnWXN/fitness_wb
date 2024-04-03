@@ -4,7 +4,6 @@ from api import check_staff, check_authorize
 from common.const import CONST
 from common.enum import StaffRoleEnum, OrderStatusEnum, ExpenseStatusEnum
 from infra.utils import resp_success, resp_failure
-from loggers.logger import logger
 from orm.expense_orm import my_expenses
 from orm.model import UserModel
 from orm.order_orm import my_orders

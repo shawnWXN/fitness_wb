@@ -12,6 +12,7 @@ from sanic.response import json as sanic_json
 
 from common.const import CONST
 from loggers.logger import logger
+from settings.setting import SETTING
 
 
 def resp_success(resp_data: dict = None, **kwargs):
@@ -148,16 +149,63 @@ def requests_retry(method, url, **kwargs) -> requests.Response:
     return response
 
 
+def get_openid(request):
+    real_id = request.headers.get('x-wx-openid') or None
+    mock_id = request.headers.get('x-dev-openid') or None
+    return mock_id or real_id if SETTING.DEV else real_id
+
+
 def get_module_func(func: typing.Callable = None):
     if func is None:
         # 获取当前函数名
         current_function_name = inspect.currentframe().f_back.f_code.co_name
         # 获取当前模块名
         current_module_name = inspect.getmodule(inspect.currentframe().f_back).__name__
+        # 行号
+        line_no = inspect.currentframe().f_back.f_code.co_firstlineno
+
     else:
         # 获取传入函数的函数名
         current_function_name = func.__name__
         # 获取传入函数的模块名
         current_module_name = inspect.getmodule(func).__name__
+        # 行号
+        _, line_no = inspect.getsourcelines(func)
 
-    return f'{current_module_name}:{current_function_name}'
+    return f'{current_module_name}:{line_no}:{current_function_name}'
+
+
+class TokenBucketExceedError(Exception):
+    pass
+
+
+token_buckets = {}  # 使用字典作为内存存储
+
+
+def token_bucket_limiter(openid, seconds: float = 1.5, capacity: int = 1,
+                         exceed_handle: typing.Any = TokenBucketExceedError("Too many requests, please try again.")):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            current_time = time.time()
+            key = openid + '@' + get_module_func(func)
+
+            # 移除seconds秒前的请求记录
+            if key in token_buckets:
+                token_buckets[key] = [t for t in token_buckets[key] if t >= current_time - seconds]
+
+            # 检查当前是否超过请求数量限制
+            if len(token_buckets.get(key, [])) < capacity:
+                token_buckets.setdefault(key, []).append(current_time)
+                return func(*args, **kwargs)
+            else:
+                if callable(exceed_handle):
+                    return exceed_handle()
+                elif isinstance(exceed_handle, Exception):
+                    raise exceed_handle
+                else:
+                    return exceed_handle
+
+        return wrapper
+
+    return decorator

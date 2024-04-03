@@ -6,11 +6,12 @@ import re
 import pyfiglet
 from sanic import Sanic
 from sanic.handlers import ErrorHandler
+from sanic.request import Request
 from sanic.views import HTTPMethodView
 from tortoise.contrib.sanic import register_tortoise
 
 from common.const import CONST
-from infra.utils import resp_failure, camel2snake
+from infra.utils import resp_failure, camel2snake, get_openid
 from loggers.logger import logger
 from orm.model import UserModel
 from scheduler.core import aps
@@ -20,23 +21,24 @@ from settings.setting import SETTING
 app = Sanic(CONST.SYSTEM_APP_NAME)
 
 
-class GlobalErrorHandler(ErrorHandler):
+class _GlobalErrorHandler(ErrorHandler):
     def default(self, request, exc):
         """
         handles errors that have no error handlers assigned
         """
-        logger.exception(f"GlobalErrorHandler: {str(exc)}")
+        logger.exception(f"GlobalErrorHandler: {exc.__class__.__name__}<{str(exc)}>")
         if isinstance(exc, AssertionError):
             if "not found" in exc.args[-1]:
                 return resp_failure(404, "记录不存在")
             if "no access" in exc.args[-1]:
                 return resp_failure(403, "您的权限不足以操作")
         # You custom error handling logic...
-        return super().default(request, exc)
+        # return super().default(request, exc)
+        return resp_failure(500, "哦豁，服务器开小差了~")
 
 
 @app.middleware("request")
-async def before_request(request):
+async def _before_request(request: Request):
     try:
         if "multipart/form-data" in request.headers.get('content-type'):
             body = "`multipart/form-data`"
@@ -47,16 +49,10 @@ async def before_request(request):
 
     log_msg = f"{request.method} {request.path}, args:{request.args}, body:{body}"
     if not request.route:
-        logger.warning(log_msg + ", status_code 404.")  # 404时，return后将直接到ErrorHandler
+        logger.warning(log_msg + ", status_code 404.")
         return resp_failure(404, f"路径不存在")
 
-    real_id = request.headers.get('x-wx-openid') or None
-    mock_id = request.headers.get('x-dev-openid') or None
-    if SETTING.DEV:
-        openid = mock_id or real_id
-    else:
-        openid = real_id
-
+    openid = get_openid(request)
     if not openid:
         logger.warning(log_msg + ", status_code 400.")
         return resp_failure(400, f"not found openid.")
@@ -69,18 +65,18 @@ async def before_request(request):
 
 # 定义响应中间件
 @app.middleware("response")
-async def custom_header(request, response):
-    response.headers["Sanic-App-Version"] = "03281200"
+async def _custom_header(request: Request, response):
+    response.headers["Sanic-App-Version"] = "04031333"
 
 
 @app.listener("before_server_start")
-async def before_server_start(app, loop):
+async def _before_server_start(app, loop):
     aps.run(loop)
     run_tasks()
 
 
 @app.listener("before_server_stop")
-async def before_server_stop(app, loop):
+async def _before_server_stop(app, loop):
     aps.stop()
 
 
@@ -108,7 +104,7 @@ def run_web_service():
         "PROXIES_COUNT": 1
     }
     app.config.update(options)
-    app.error_handler = GlobalErrorHandler()
+    app.error_handler = _GlobalErrorHandler()
     register_routes('api')
 
     pattern = r"(?P<dialect>\w+)://(?P<user>\w+):(?P<password>\w+)@(?P<host>[\d.]+):(?P<port>\d+)/(?P<db>\w+)"
