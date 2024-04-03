@@ -1,15 +1,17 @@
+import base64
+import inspect
 import re
-from functools import lru_cache
+import time
+import typing
+from functools import lru_cache, wraps
+from io import BytesIO
 
 import qrcode
-from io import BytesIO
-import base64
-
+import requests
 from sanic.response import json as sanic_json
 
 from common.const import CONST
 from loggers.logger import logger
-from settings.setting import SETTING
 
 
 def resp_success(resp_data: dict = None, **kwargs):
@@ -92,3 +94,70 @@ def days_bill_description(limit_days):
             return '年卡'
         case _:
             assert False, "Invalid limit_days"
+
+
+def retry(
+        max_retry: int = 3,
+        name: str = None,
+        sleep: int = 2,
+        sleep_strategy: typing.Callable = None,
+        can_be_none: bool = True
+):
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            nonlocal name
+            if not name:
+                name = get_module_func(func)
+            retry_turn = 0
+            while True:
+                try:
+                    return_value = func(*args, **kwargs)
+                    if not can_be_none and return_value is None:
+                        raise Exception('NoneResultError, func:{} returns None'.format(name))
+                    return return_value
+                except Exception as e:
+                    exec_info = f'{e.__class__.__name__}<{str(e)}>'
+                    logger.warning(
+                        'func:{}, failed:{}, args:{}, kwargs:{}, retry:{}/{}...'.format(name, exec_info, args, kwargs,
+                                                                                        retry_turn, max_retry))
+                    retry_turn += 1
+
+                    if max_retry and retry_turn > max_retry:
+                        break
+
+                    sleep_seconds = sleep_strategy(retry_turn) if sleep_strategy else sleep
+                    logger.warning('func:{} next retry after {} seconds'.format(name, sleep_seconds))
+                    time.sleep(sleep_seconds)
+
+            raise Exception('MaxRetryError, func:{}, failed:{}, retry turn: {}'.format(name, exec_info, retry_turn))
+
+        return wrapper
+
+    return decorate
+
+
+@retry(max_retry=6)
+def requests_retry(method, url, **kwargs) -> requests.Response:
+    """发送GET请求并返回响应"""
+    kwargs['timeout'] = 300
+    response = requests.request(method, url, **kwargs)
+    if 400 <= response.status_code < 500:
+        return response
+    response.raise_for_status()  # 如果响应错误（例如404 Not Found）将引发异常
+    return response
+
+
+def get_module_func(func: typing.Callable = None):
+    if func is None:
+        # 获取当前函数名
+        current_function_name = inspect.currentframe().f_back.f_code.co_name
+        # 获取当前模块名
+        current_module_name = inspect.getmodule(inspect.currentframe().f_back).__name__
+    else:
+        # 获取传入函数的函数名
+        current_function_name = func.__name__
+        # 获取传入函数的模块名
+        current_module_name = inspect.getmodule(func).__name__
+
+    return f'{current_module_name}:{current_function_name}'

@@ -1,4 +1,5 @@
 import copy
+import re
 import typing
 from datetime import datetime
 
@@ -7,6 +8,7 @@ from jsonschema import validate, ValidationError, SchemaError
 from common.const import CONST
 from common.enum import BillTypeEnum, OrderStatusEnum, StaffRoleEnum, ExpenseStatusEnum
 from loggers.logger import logger
+from service.wx_openapi import phone_via_code
 
 userprofile_update_schema = {
     "type": "object",
@@ -14,7 +16,7 @@ userprofile_update_schema = {
         "phone": {
             "type": ["string", "null"],
             "title": "手机号",
-            "pattern": "^1\\d{10}$"
+            "minLength": 1
         },
         "nickname": {
             "type": ["string", "null"],
@@ -307,7 +309,14 @@ def validate_order_expense_get_args(request,
 
 
 def validate_userprofile_update_data(data: dict) -> typing.Tuple[bool, str]:
-    return __validate_data(data, userprofile_update_schema)
+    rst, err_msg = __validate_data(data, userprofile_update_schema)
+    if not rst:
+        return rst, err_msg
+
+    if data.get('phone') and not re.match(r'^1\d{10}$', data.get('phone')):
+        data['phone'] = phone_via_code(data.get('phone'))  # 用code置换手机号
+
+    return True, ''
 
 
 def validate_user_update_data(data: dict) -> typing.Tuple[bool, str]:
