@@ -10,6 +10,7 @@ from orm.order_orm import my_orders
 from orm.user_orm import find_users, update_user
 from service.validate_service import validate_userprofile_update_data, validate_user_update_data, \
     validate_order_expense_get_args
+from service.wx_openapi import phone_via_code
 
 
 class User(HTTPMethodView):
@@ -76,6 +77,21 @@ class UserProfile(HTTPMethodView):
         user = await UserModel.update_one(data)
         request.ctx.user = user
         return resp_success()
+
+
+class UserPhone(HTTPMethodView):
+    @staticmethod
+    async def get(request):
+        """
+        code换手机号（注意服务端访问的开发接口，需要在云托管配置该接口免token访问）
+        1. 小程序端使用专用组件：https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/getPhoneNumber.html
+        2. 服务端：https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/user-info/phone-number/getPhoneNumber.html
+        """
+        code = request.args.get('code')
+        if not code:
+            return resp_failure(400, "缺少必要参数")
+
+        return resp_success(phone=phone_via_code(code))
 
 
 class UserOrder(HTTPMethodView):
