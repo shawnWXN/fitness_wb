@@ -7,7 +7,6 @@ from infra.utils import resp_failure, resp_success, days_bill_description
 from orm.course_orm import find_courses
 from orm.model import CourseModel
 from service.validate_service import validate_course_create_data, validate_course_update_data
-from service.wx_openapi import send_subscribe_message
 
 
 class Course(HTTPMethodView):
@@ -94,13 +93,18 @@ class CourseConsult(HTTPMethodView):
         :return:
         """
         course_id = request.args.get(CONST.COURSE_ID) or 0
-        course: CourseModel = await CourseModel.get_one(id=course_id)
-
-        send_subscribe_message('jpW0sZUQrb6AF96WjgX-Pyg8lkxQaXB7Lytvil0ZUTQ', {
-            'thing1': {'value': '用户xxx'},
-            'time2': {'value': '2019年10月1日 15:01'},
-            'thing3': {'value': f'用户想咨询{course.name}'},
-        }, receiver='owbV-6xCq8ChfdfmhPkV41PGUSMM')
+        # course: CourseModel = await CourseModel.get_one(id=course_id)
+        # coach: UserModel = await UserModel.get_one(id=course.coach_id)
+        # async with aiohttp.ClientSession() as session:
+        #     await session.post(
+        #         'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=e020e7e0-cdd9-4f55-83cf-8f800db5b316',
+        #         json={
+        #             'msgtype': 'text',
+        #             'text': {
+        #                 "content": "hello world"
+        #             }
+        #         }
+        #     )
 
         return resp_success(phone='19318578554')
 
