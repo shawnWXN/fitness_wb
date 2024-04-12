@@ -1,14 +1,18 @@
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 
+from common.enum import OrderStatusEnum
 from loggers.logger import logger
+from orm.model import OrderModel
 from scheduler.core import aps
 
 
-def func1():
-    logger.info(time.time())
-    aps.add_job(func1, 'date', run_date=datetime.now() + timedelta(seconds=30))
+async def expire_order():
+    modified_count = await OrderModel.filter(expire_time__lt=datetime.now()) \
+        .update(status=OrderStatusEnum.EXPIRED.value)
+
+    if not modified_count:
+        logger.info(f"{modified_count}'s Order expired")
 
 
-def run_tasks():
-    aps.add_job(func1, 'date', run_date=datetime.now() + timedelta(seconds=30))
+async def run_tasks():
+    aps.add_job(expire_order, 'cron', hour='0', minute='1')

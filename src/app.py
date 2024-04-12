@@ -66,13 +66,13 @@ async def _before_request(request: Request):
 # 定义响应中间件
 @app.middleware("response")
 async def _custom_header(request: Request, response):
-    response.headers["Sanic-App-Version"] = "04031333"
+    response.headers["Sanic-App-Version"] = "04122232"
 
 
 @app.listener("before_server_start")
 async def _before_server_start(app, loop):
     aps.run(loop)
-    run_tasks()
+    await run_tasks()
 
 
 @app.listener("before_server_stop")
@@ -132,8 +132,7 @@ def run_web_service():
         'timezone': 'Asia/Shanghai'  # 默认是UTC
     }
     register_tortoise(app, config=tortoise_config, generate_schemas=True)
-    if SETTING.DEV:
-        logger.warning("SERVER IS DEV MODE.")
+    logger.warning("SERVER IS DEV MODE.") if SETTING.DEV else logger.warning("SERVER IS PRODUCTION MODE.")
 
 
 run_web_service()
