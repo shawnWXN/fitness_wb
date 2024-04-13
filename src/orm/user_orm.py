@@ -85,5 +85,7 @@ async def update_user(request):
             .update(member_name=name_zh)
         modified_expense_cnt = await ExpenseModel.filter(member_name=user.name_zh) \
             .update(member_name=name_zh)
-        logger.info(f"name_zh: {user.name_zh} -> {name_zh}, "
-                    f"cascade update: {modified_order_cnt} order / {modified_expense_cnt} expense")
+        modified_expense_cnt1 = await ExpenseModel.filter(coach_name=user.name_zh) \
+            .update(coach_name=name_zh)
+        logger.info(f"name_zh: {user.name_zh}, {name_zh}, "
+                    f"cascade update: {modified_order_cnt} order / {modified_expense_cnt + modified_expense_cnt1} expense")
