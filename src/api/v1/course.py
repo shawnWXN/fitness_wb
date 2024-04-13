@@ -36,11 +36,10 @@ class Course(HTTPMethodView):
         await prepare_data(data)
 
         # 判断教练ID真实性
-        # user: UserModel = await UserModel.get_one(id=data[CONST.COACH_ID])
-        # if StaffRoleEnum.COACH.value not in user.staff_roles or not user.nickname:
-        #     return resp_failure(400, "教练不存在或未设置昵称")
+        exists_course: CourseModel = await CourseModel.get_or_none(name=data[CONST.NAME])
+        if exists_course:
+            return resp_failure(400, f"课程名[{exists_course.name}]已经存在了")
 
-        # data[CONST.COACH_NAME] = user.nickname
         course: CourseModel = await CourseModel.create(**data)
         return resp_success(id=course.id)
 

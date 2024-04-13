@@ -46,7 +46,6 @@ user_update_schema = {
                 "enum": StaffRoleEnum.iter.value
             },
             "title": "账号权限列表",
-            "description": "员工非空，会员为空",
             "minItems": 0,
             "maxItems": len(StaffRoleEnum.iter.value),
             "uniqueItems": True
@@ -146,7 +145,6 @@ order_create_schema = {
             "type": "integer",
             "minimum": 1,
             "title": "订单金额",
-            "description": "RMB",
         },
         "receipt": {
             "type": "string",
@@ -214,7 +212,6 @@ order_update_schema_part = {  # 订单更新schema片段
             "type": ["integer", "null"],
             "minimum": 1,
             "title": "订单金额",
-            "description": "RMB",
         },
         "receipt": {
             "type": ["string", "null"],

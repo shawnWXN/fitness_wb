@@ -137,7 +137,7 @@ class _Const(object):
     PAGE_SIZE = 'size'
     PAGE_NUM = 'page'
 
-    CNAME = 'cname'
+    NAME = 'name'
     BRAND = 'brand'
     PUBLIC = 'public'
     PRIVATE = 'private'
