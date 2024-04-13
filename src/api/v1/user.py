@@ -37,7 +37,7 @@ class User(HTTPMethodView):
     @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
     async def put(request):
         """
-        修改user的权限
+        修改user的权限、中文姓名
         :param request:
         :return:
         """
@@ -64,7 +64,7 @@ class UserProfile(HTTPMethodView):
     @staticmethod
     async def put(request):
         """
-        更新profile：手机，昵称，头像，性别
+        更新profile：手机，昵称，头像
         :param request:
         :return:
         """
@@ -74,6 +74,8 @@ class UserProfile(HTTPMethodView):
             return resp_failure(400, err_msg)
 
         data.update({CONST.ID: request.ctx.user.id})
+        if data.get(CONST.NICKNAME) and not request.ctx.user.name_zh:
+            data.update({CONST.NAME_ZH: data.get(CONST.NICKNAME)})
         user = await UserModel.update_one(data)
         request.ctx.user = user
         return resp_success()

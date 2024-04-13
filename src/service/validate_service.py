@@ -20,7 +20,7 @@ userprofile_update_schema = {
         },
         "nickname": {
             "type": ["string", "null"],
-            "title": "名称",
+            "title": "微信昵称",
             "minLength": 1
         },
         "avatar": {
@@ -49,6 +49,11 @@ user_update_schema = {
             "minItems": 0,
             "maxItems": len(StaffRoleEnum.iter.value),
             "uniqueItems": True
+        },
+        "name_zh": {
+            "type": ["string", "null"],
+            "title": "中文姓名",
+            "minLength": 1
         }
     },
     "required": [

@@ -138,12 +138,13 @@ class _Const(object):
     PAGE_NUM = 'page'
 
     NAME = 'name'
+    NAME_ZH = 'name_zh'
     BRAND = 'brand'
     PUBLIC = 'public'
     PRIVATE = 'private'
 
     USER_NAME = 'user_name'
-    NICK_NAME = 'nick_name'
+    NICKNAME = 'nickname'
     PASSWD = 'passwd'
 
     SCHEMA = 'schema'

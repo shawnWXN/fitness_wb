@@ -45,7 +45,7 @@ class Order(HTTPMethodView):
         if not member.phone or not member.nickname:
             return resp_failure(400, "该会员还未完善资料")
 
-        data[CONST.MEMBER_NAME] = member.nickname
+        data[CONST.MEMBER_NAME] = member.name_zh or member.nickname
         data[CONST.MEMBER_PHONE] = member.phone
         # 根据课程ID，找到课程相关信息
         course: CourseModel = await CourseModel.get_one(id=data[CONST.COURSE_ID])
