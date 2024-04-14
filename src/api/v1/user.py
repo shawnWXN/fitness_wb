@@ -74,8 +74,6 @@ class UserProfile(HTTPMethodView):
             return resp_failure(400, err_msg)
 
         data.update({CONST.ID: request.ctx.user.id})
-        if data.get(CONST.NICKNAME) and not request.ctx.user.name_zh:
-            data.update({CONST.NAME_ZH: data.get(CONST.NICKNAME)})
         user = await UserModel.update_one(data)
         request.ctx.user = user
         return resp_success()
