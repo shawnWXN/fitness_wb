@@ -37,7 +37,8 @@ async def my_orders(request) -> dict:
     pagination = await paging(request, query)
     pk_thumbnail_dict = await pk_thumbnail_map()
     for item in pagination['items']:
-        item['thumbnail'] = pk_thumbnail_dict.get(item['id'])
+        # FIXME 删除课程的话，会员端看“我的会员卡”，将看不到课程封面图了
+        item['thumbnail'] = pk_thumbnail_dict.get(item.get(CONST.COURSE_ID))
 
     return pagination
 
