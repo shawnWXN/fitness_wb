@@ -148,7 +148,7 @@ order_create_schema = {
         },
         "amount": {
             "type": "integer",
-            "minimum": 1,
+            "minimum": 0,
             "title": "订单金额",
         },
         "receipt": {
@@ -215,7 +215,7 @@ order_update_schema_part = {  # 订单更新schema片段
         },
         "amount": {
             "type": ["integer", "null"],
-            "minimum": 1,
+            "minimum": 0,
             "title": "订单金额",
         },
         "receipt": {

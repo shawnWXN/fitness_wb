@@ -44,6 +44,8 @@ class Order(HTTPMethodView):
         member: UserModel = await UserModel.get_one(id=data[CONST.MEMBER_ID])
         if not member.phone or not member.nickname:
             return resp_failure(400, "该会员还未完善资料")
+        if member.staff_roles:
+            return resp_failure(400, "无法为员工开通课程")
 
         data[CONST.MEMBER_NAME] = member.name_zh or member.nickname
         data[CONST.MEMBER_PHONE] = member.phone

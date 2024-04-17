@@ -59,14 +59,15 @@ async def _before_request(request: Request):
 
     user, _ = await UserModel.get_or_create(openid=openid)
     user_info = f", user[id={user.id},openid={user.openid},role={user.staff_roles}], args:"
-    logger.info(log_msg.replace(", args:", user_info))
+    if request.method.upper() != 'GET':
+        logger.info(log_msg.replace(", args:", user_info))
     request.ctx.user = user
 
 
 # 定义响应中间件
 @app.middleware("response")
 async def _custom_header(request: Request, response):
-    response.headers["Sanic-App-Version"] = "04162304"
+    response.headers["Sanic-App-Version"] = "04172346"
 
 
 @app.listener("before_server_start")
