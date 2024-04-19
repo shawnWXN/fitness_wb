@@ -57,10 +57,12 @@ async def _before_request(request: Request):
         logger.warning(log_msg + ", status_code 400.")
         return resp_failure(400, f"not found openid.")
 
-    user, _ = await UserModel.get_or_create(openid=openid)
+    user = await UserModel.get_or_none(openid=openid)
+    if not user:
+        user = UserModel(id=-1, openid=openid)
     user_info = f", user[id={user.id},openid={user.openid},role={user.staff_roles}], args:"
-    if request.method.upper() != 'GET':
-        logger.info(log_msg.replace(", args:", user_info))
+    # if request.method.upper() != 'GET':
+    logger.info(log_msg.replace(", args:", user_info))
     request.ctx.user = user
 
 

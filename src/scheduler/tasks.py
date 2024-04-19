@@ -10,7 +10,7 @@ async def expire_order():
     modified_count = await OrderModel.filter(expire_time__lt=datetime.now()) \
         .update(status=OrderStatusEnum.EXPIRED.value)
 
-    if not modified_count:
+    if modified_count:
         logger.info(f"{modified_count}'s Order expired")
 
 

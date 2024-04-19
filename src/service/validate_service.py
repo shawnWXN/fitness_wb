@@ -28,7 +28,8 @@ userprofile_update_schema = {
             "title": "头像",
             "minLength": 1
         }
-    }
+    },
+    "minProperties": 1
 }
 
 user_update_schema = {
@@ -315,7 +316,7 @@ def validate_userprofile_update_data(data: dict) -> typing.Tuple[bool, str]:
     if not rst:
         return rst, err_msg
 
-    if data.get('phone') and not re.match(r'^1\d{10}$', data.get('phone')):
+    if data.get('phone') and not re.match(r'^1\d{10}$', data.get('phone')):  # FIXME 手机号正则可能有问题
         data['phone'] = phone_via_code(data.get('phone'))  # 用code置换手机号
 
     return True, ''

@@ -4,6 +4,7 @@ from api import check_staff, check_authorize
 from common.const import CONST
 from common.enum import StaffRoleEnum, OrderStatusEnum, ExpenseStatusEnum
 from infra.utils import resp_success, resp_failure
+from loggers.logger import logger
 from orm.expense_orm import my_expenses
 from orm.model import UserModel
 from orm.order_orm import my_orders
@@ -73,9 +74,12 @@ class UserProfile(HTTPMethodView):
         if not rst:
             return resp_failure(400, err_msg)
 
-        data.update({CONST.ID: request.ctx.user.id})
-        user = await UserModel.update_one(data)
-        request.ctx.user = user
+        user, do_create = await UserModel.get_or_create(openid=request.ctx.user.openid)
+        if do_create:
+            db_user = user.to_dict()
+            logger.info(f"create user {(db_user.update(data), db_user)[1]}")
+        data.update({CONST.ID: user.id})
+        await UserModel.update_one(data)
         return resp_success()
 
 
