@@ -90,4 +90,5 @@ class Qrcode(HTTPMethodView):
             await order.save()
             return resp_success(scene=sc, id=expense.id)
         else:  # 签到
-            return resp_success(scene=sc, id=_id)
+            member: UserModel = await UserModel.get_one(openid=_id)
+            return resp_success(scene=sc, data=member.to_dict())
