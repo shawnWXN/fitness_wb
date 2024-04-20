@@ -53,7 +53,7 @@ class Qrcode(HTTPMethodView):
         :param request:
         :return:
         """
-        scene_uuid: str = (request.json or dict()).get('scene-uuid')
+        scene_uuid: str = (request.json or dict()).get('scene_uuid')
         if not scene_uuid:
             return resp_failure(400, "缺少必要参数")
 
