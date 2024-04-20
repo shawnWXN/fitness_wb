@@ -15,7 +15,7 @@ from service.validate_service import validate_order_create_data, validate_order_
 
 class Order(HTTPMethodView):
     @staticmethod
-    @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
+    @check_staff(StaffRoleEnum.iter.value)  # 给教练权限，是为用教练账号给会员签到
     async def get(request):
         """
         查看所有订单

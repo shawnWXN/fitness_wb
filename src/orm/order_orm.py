@@ -6,7 +6,7 @@ from tortoise.queryset import Q
 from api import paging
 from common.const import CONST
 from orm.course_orm import pk_thumbnail_map
-from orm.model import OrderModel
+from orm.model import OrderModel, UserModel
 
 
 async def my_orders(request) -> dict:
@@ -62,6 +62,9 @@ async def find_orders(request) -> dict:
         # 如果是order_no
         if re.match(r'^[a-zA-Z0-9]{22}$', search):
             query = query.filter(order_no=search)
+        if search.startswith('owbV-') and len(search) == 28:
+            member = await UserModel.get_one(openid=search)
+            query = query.filter(member_id=member.id)
         elif search.isdigit():
             query = query.filter(member_phone__icontains=search)
         else:
