@@ -6,7 +6,7 @@ from datetime import datetime
 from jsonschema import validate, ValidationError, SchemaError
 
 from common.const import CONST
-from common.enum import BillTypeEnum, OrderStatusEnum, StaffRoleEnum, ExpenseStatusEnum
+from common.enum import BillTypeEnum, OrderStatusEnum, StaffRoleEnum, ExpenseStatusEnum, ScanSceneEnum
 from loggers.logger import logger
 from service.wx_openapi import phone_via_code
 
@@ -276,6 +276,26 @@ expense_update_schema = {
     ]
 }
 
+qrcode_create_schema = {
+    "type": "object",
+    "properties": {
+        "scene": {
+            "type": "string",
+            "title": "场景值",
+            "enum": ScanSceneEnum.iter.value,
+        },
+        "uuid": {
+            "type": "string",
+            "title": "唯一标识",
+            "minLength": 1
+        }
+    },
+    "required": [
+        "scene",
+        "uuid"
+    ]
+}
+
 
 def validate_order_expense_get_args(request,
                                     status_enum: typing.Type[OrderStatusEnum] | typing.Type[ExpenseStatusEnum]):
@@ -392,6 +412,10 @@ def validate_order_comment_create_data(data: dict) -> typing.Tuple[bool, str]:
 
 def validate_expense_update_data(data: dict) -> typing.Tuple[bool, str]:
     return __validate_data(data, expense_update_schema)
+
+
+def validate_qrcode_create_data(data: dict) -> typing.Tuple[bool, str]:
+    return __validate_data(data, qrcode_create_schema)
 
 
 def __parse_error_msg(e: ValidationError, schema: dict):

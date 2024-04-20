@@ -77,3 +77,18 @@ class ExpenseStatusEnum(Enum):
         ACTIVATED,
         FREE
     ]
+
+
+class ScanSceneEnum(Enum):
+    EXPENSE = "expense"
+    SIGNIN = "signin"
+
+    explain = {
+        EXPENSE: "核销",
+        SIGNIN: "签到"
+    }
+
+    iter = [
+        EXPENSE,
+        SIGNIN
+    ]

@@ -59,6 +59,7 @@ async def update_user(request):
     need_update = False
     cascade = False
 
+    # 判断权限能否更新
     staff_roles = data.get(CONST.STAFF_ROLES)
     if staff_roles is not None:
         imparted_role = max(staff_roles) if staff_roles else 0
@@ -67,6 +68,7 @@ async def update_user(request):
     else:
         data.pop(CONST.STAFF_ROLES, None)
 
+    # 判断name_hz
     name_zh = data.get(CONST.NAME_ZH)
     if name_zh:
         if name_zh != user.name_zh:
@@ -75,17 +77,36 @@ async def update_user(request):
     else:
         data.pop(CONST.NAME_ZH, None)
 
+    # 判断手机号
+    phone = data.get(CONST.PHONE)
+    if phone:
+        if phone != user.phone:
+            cascade = True
+        need_update = True
+    else:
+        data.pop(CONST.PHONE, None)
+
+    # 更新UserModel
     if need_update:
         await UserModel.update_one(data)
     else:
         logger.warning(f"nothing update for user[id={user.id},openid={user.openid}]")
 
     if cascade:
-        modified_order_cnt = await OrderModel.filter(member_name=user.name_zh) \
-            .update(member_name=name_zh)
-        modified_expense_cnt = await ExpenseModel.filter(member_name=user.name_zh) \
-            .update(member_name=name_zh)
-        modified_expense_cnt1 = await ExpenseModel.filter(coach_name=user.name_zh) \
-            .update(coach_name=name_zh)
-        logger.info(f"name_zh: {user.name_zh}, {name_zh}, "
-                    f"cascade update: {modified_order_cnt} order / {modified_expense_cnt + modified_expense_cnt1} expense")
+        if name_zh:
+            modified_order_cnt = await OrderModel.filter(member_id=user.id) \
+                .update(member_name=name_zh)
+            modified_expense_cnt = await ExpenseModel.filter(member_id=user.id) \
+                .update(member_name=name_zh)
+            modified_expense_cnt1 = await ExpenseModel.filter(coach_id=user.id) \
+                .update(coach_name=name_zh)
+            logger.info(f"name_zh: {user.name_zh}, {name_zh}, "
+                        f"cascade update: {modified_order_cnt} order / {modified_expense_cnt + modified_expense_cnt1} expense")
+        if phone:
+            modified_order_cnt = await OrderModel.filter(member_id=user.id) \
+                .update(member_phone=phone)
+            modified_expense_cnt = await ExpenseModel.filter(member_id=user.id) \
+                .update(member_phone=phone)
+            # 核销表没存教练的手机号
+            logger.info(f"phone: {user.phone}, {phone}, "
+                        f"cascade update: {modified_order_cnt} order / {modified_expense_cnt} expense")
