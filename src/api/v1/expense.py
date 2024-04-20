@@ -51,7 +51,7 @@ class Expense(HTTPMethodView):
             member_name=order.member_name,
             member_phone=order.member_phone,
             coach_id=request.ctx.user.id,
-            coach_name=request.ctx.user.name_zh,
+            coach_name=request.ctx.user.nickname or request.ctx.user.name_zh,
             course_id=order.course_id,
             course_name=order.course_name,
             order_no=order.order_no,
