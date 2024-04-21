@@ -1,10 +1,12 @@
 import base64
 import inspect
+import os.path
 import re
 import time
 import typing
 from functools import lru_cache, wraps
 from io import BytesIO
+from PIL import Image
 
 import qrcode
 import requests
@@ -65,13 +67,41 @@ def str2base64(s: str) -> str:
     """
     生成字符串对应的图片（base64字符串）
     """
-    qr_img = qrcode.make(s)
+    qr = qrcode.QRCode(
+        version=2,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=4,
+    )
+
+    # 添加数据到 QR 码
+    qr.add_data(s)
+    qr.make(fit=True)
+
+    # 创建 QR 码图像
+    img_qr = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+
+    # 打开 logo 文件
+    # logo = Image.open('my_avatar.png')
+    logo = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logo.png'))
+
+    # 计算 logo 的大小（这里我们设定 logo 大小为 QR 码的 1/4）
+    logo_size = int(min(img_qr.size) / 5)
+
+    # 重新设置 logo 的大小
+    logo = logo.resize((logo_size, logo_size), Image.Resampling.BILINEAR)
+
+    # 计算 logo 在 QR 码上的位置
+    pos = ((img_qr.size[0] - logo_size) // 2, (img_qr.size[1] - logo_size) // 2)
+
+    # 将 logo 粘贴到 QR 码上
+    img_qr.paste(logo, pos)
 
     # 创建一个字节流来保存二维码图像
     byte_io = BytesIO()
 
     # 保存二维码图像到字节流，格式为PNG
-    qr_img.save(byte_io, 'PNG')
+    img_qr.save(byte_io, 'PNG')
 
     # 将字节流的内容转换为Base64编码的字符串
     base64_str = base64.b64encode(byte_io.getvalue()).decode('utf-8')

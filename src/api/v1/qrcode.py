@@ -4,7 +4,7 @@ import pytz
 from sanic.views import HTTPMethodView
 
 from api import check_staff, check_authorize
-from common.enum import StaffRoleEnum, ScanSceneEnum, OrderStatusEnum
+from common.enum import StaffRoleEnum, ScanSceneEnum, OrderStatusEnum, BillTypeEnum
 from infra.utils import resp_failure, resp_success, str2base64
 from orm.model import OrderModel, UserModel, ExpenseModel
 from service.validate_service import validate_qrcode_create_data
@@ -68,10 +68,14 @@ class Qrcode(HTTPMethodView):
         sc, _id = scene_uuid.split('#', maxsplit=1)
         if sc == ScanSceneEnum.EXPENSE.value:
             order: OrderModel = await OrderModel.get_one(order_no=_id)
+            # 只有计次卡才能核销
+            if order.bill_type != BillTypeEnum.COUNT:
+                return resp_failure(500, "此订单不支持核销")
+
             # 判断订单状态是否activated、还在有效期、剩余次数大于零
             if order.status != OrderStatusEnum.ACTIVATED or order.expire_time <= datetime.now(
                     pytz.timezone('Asia/Shanghai')) or order.surplus_counts <= 0:
-                raise AssertionError(f"OrderModel[{order.order_no}] no access for activated")
+                return resp_failure(500, "订单不可使用")
 
             # 组装数据
             data = dict(

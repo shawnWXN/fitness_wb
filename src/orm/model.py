@@ -2,6 +2,8 @@ import shortuuid
 import typing
 from datetime import datetime
 from tortoise.models import Model
+from tortoise.queryset import QuerySet
+from tortoise.functions import Count
 from tortoise import fields
 from enum import Enum
 
@@ -42,6 +44,12 @@ class BaseModel(Model):
     async def delete_one(cls, _id: int):
         obj = await cls.get_one(id=_id)
         await obj.delete()
+
+    @classmethod
+    async def count_via_group_by(cls, query: QuerySet, group_by: str, count_field: str = 'id') -> dict[typing.Any, int]:
+        # 使用Tortoise ORM的聚合函数Count来分组并计数每个bill_type
+        bill_type_counts = await query.annotate(count=Count(count_field)).group_by(group_by).values(group_by, 'count')
+        return {entry[group_by]: entry['count'] for entry in bill_type_counts}
 
     def to_dict(self, *field) -> dict:
         d = dict()

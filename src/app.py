@@ -60,7 +60,7 @@ async def _before_request(request: Request):
     user = await UserModel.get_or_none(openid=openid)
     if not user:
         user = UserModel(id=-1, openid=openid)
-    user_info = f", user[id={user.id},openid={user.openid},role={user.staff_roles}], args:"
+    user_info = f", user[name={user.nickname or user.name_zh or '匿名'},role={user.staff_roles}], args:"
     # if request.method.upper() != 'GET':
     logger.info(log_msg.replace(", args:", user_info))
     request.ctx.user = user

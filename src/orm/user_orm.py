@@ -43,7 +43,7 @@ async def find_users(request) -> dict:
                    [Q(staff_roles_length=0) if role == 'null' else Q(staff_roles__contains=[int(role)]) for role in
                     filter_roles]))
 
-    return await paging(request, query, ('-nickname', '-phone'))
+    return await paging(request, query)
 
 
 async def update_user(request):

@@ -355,10 +355,10 @@ def validate_course_create_data(data: dict) -> typing.Tuple[bool, str]:
     #     return False, f"miss bill_type when limit_days or limit_counts exists"
 
     if data.get("bill_type") == BillTypeEnum.DAY.value and not data.get('limit_days'):
-        return False, f"包时模式的课程需填写`有效天数`"
+        return False, f"包时课程需填写`有效天数`"
 
     if data.get("bill_type") == BillTypeEnum.COUNT.value and not data.get('limit_counts'):
-        return False, f"计次模式的课程需填写`有效次数`"
+        return False, f"计次课程需填写`有效次数`"
 
     return True, ''
 
@@ -381,10 +381,10 @@ def validate_course_update_data(data: dict) -> typing.Tuple[bool, str]:
     #     return False, f"miss bill_type when limit_days or limit_counts exists"
 
     if data.get("bill_type") == BillTypeEnum.DAY.value and not data.get('limit_days'):
-        return False, f"包时模式的课程需填写`有效天数`"
+        return False, f"包时课程需填写`有效天数`"
 
     if data.get("bill_type") == BillTypeEnum.COUNT.value and not data.get('limit_counts'):
-        return False, f"计次模式的课程需填写`有效次数`"
+        return False, f"计次课程需填写`有效次数`"
 
     return True, ''
 
