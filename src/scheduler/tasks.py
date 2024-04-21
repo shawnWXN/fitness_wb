@@ -29,4 +29,4 @@ async def add_limit_counts():
 
 async def run_tasks():
     aps.add_job(expire_order, 'cron', hour='0', minute='1')
-    aps.add_job(add_limit_counts)
+    # aps.add_job(add_limit_counts)

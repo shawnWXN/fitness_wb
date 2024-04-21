@@ -53,10 +53,12 @@ class Order(HTTPMethodView):
         course: CourseModel = await CourseModel.get_one(id=data[CONST.COURSE_ID])
         data[CONST.BILL_TYPE] = course.bill_type
         data[CONST.COURSE_NAME] = course.name
-        # 到期时间，默认今天+有效天数+1
-        data[CONST.EXPIRE_TIME] = get_datetime_zero(datetime.now() + timedelta(days=course.limit_days + 1))
+        # 有效次数，默认跟有效次数相同 FIXME 此处一般不准，需要去订单管理页，修改真实的有效次数。
+        data[CONST.LIMIT_COUNTS] = course.limit_counts
         # 剩余次数，默认跟有效次数相同
         data[CONST.SURPLUS_COUNTS] = course.limit_counts
+        # 到期时间，默认今天+有效天数+1
+        data[CONST.EXPIRE_TIME] = get_datetime_zero(datetime.now() + timedelta(days=course.limit_days + 1))
 
         order = await OrderModel.create(**data)
         return resp_success(id=order.id)
@@ -78,7 +80,7 @@ class Order(HTTPMethodView):
 
         course_id = data.get(CONST.COURSE_ID)
         if course_id and course_id != order.course_id:
-            # 根据课程ID，找到课程相关信息
+            # 有课程ID，将更新订单的课程ID、课程名、计费类型 这三个。
             course: CourseModel = await CourseModel.get_one(id=course_id)
             data[CONST.BILL_TYPE] = course.bill_type
             data[CONST.COURSE_NAME] = course.name
@@ -87,7 +89,13 @@ class Order(HTTPMethodView):
         if expire_time and get_date_time_by_str(expire_time + ' 00:00:00') > datetime.now():
             data[CONST.EXPIRE_TIME] = get_date_time_by_str(expire_time + ' 00:00:00')
         else:
-            data.pop(CONST.EXPIRE_TIME, None)  # 不能将到期时间改到过去
+            # data.pop(CONST.EXPIRE_TIME, None)  # 不能将到期时间改到过去
+            return resp_failure(400, "过期时间不能是过去")
+
+        limit_counts = data.get(CONST.LIMIT_COUNTS) or order.limit_counts
+        surplus_counts = data.get(CONST.SURPLUS_COUNTS) or order.surplus_counts
+        if surplus_counts > limit_counts:
+            return resp_failure(400, "剩余次数不能大于有效次数")
 
         await OrderModel.update_one(data)
         return resp_success()

@@ -209,6 +209,13 @@ order_update_schema_part = {  # 订单更新schema片段
             "exclusiveMaximum": 1000,
             "title": "剩余次数"
         },
+        "limit_counts": {
+            "type": ["integer", "null"],
+            "minimum": 1,
+            "maximum": 1000,
+            "exclusiveMaximum": 1000,
+            "title": "有效次数"
+        },
         "expire_time": {
             "type": ["string", "null"],
             "pattern": r"(20[0-9]{2}|2[1-9][0-9]{2})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])",

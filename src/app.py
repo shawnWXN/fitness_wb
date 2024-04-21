@@ -69,7 +69,7 @@ async def _before_request(request: Request):
 # 定义响应中间件
 @app.middleware("response")
 async def _custom_header(request: Request, response):
-    response.headers["Sanic-App-Version"] = "04201030"
+    response.headers["Sanic-App-Version"] = "04212248"
 
 
 @app.listener("before_server_start")
