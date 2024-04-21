@@ -62,7 +62,7 @@ async def find_orders(request) -> dict:
         # 如果是order_no
         if re.match(r'^[a-zA-Z0-9]{22}$', search):
             query = query.filter(order_no=search)
-        if search.startswith('owbV-') and len(search) == 28:
+        elif search.startswith('owbV-') and len(search) == 28:
             member = await UserModel.get_one(openid=search)
             query = query.filter(member_id=member.id)
         elif search.isdigit():
