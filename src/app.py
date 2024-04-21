@@ -60,7 +60,7 @@ async def _before_request(request: Request):
     user = await UserModel.get_or_none(openid=openid)
     if not user:
         user = UserModel(id=-1, openid=openid)
-    user_info = f", user[name={user.nickname or user.name_zh or '匿名'},role={user.staff_roles}], args:"
+    user_info = f", user[name={user.nickname or user.name_zh or user.openid},role={user.staff_roles}], args:"
     # if request.method.upper() != 'GET':
     logger.info(log_msg.replace(", args:", user_info))
     request.ctx.user = user
@@ -134,7 +134,7 @@ def run_web_service():
         },
         'timezone': 'Asia/Shanghai'  # 默认是UTC
     }
-    register_tortoise(app, config=tortoise_config, generate_schemas=True)
+    register_tortoise(app, config=tortoise_config)
     logger.warning("SERVER IS DEV MODE.") if SETTING.DEV else logger.warning("SERVER IS PRODUCTION MODE.")
 
 

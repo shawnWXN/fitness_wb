@@ -112,7 +112,7 @@ class OrderModel(BaseModel):
     course_name = fields.CharField(max_length=255, description="课程名")
     bill_type = fields.CharEnumField(BillTypeEnum, description="计费类型")
     # limit_days = fields.IntField(description="有效天数")
-    # limit_counts = fields.IntField(description="有效次数")
+    limit_counts = fields.IntField(description="有效次数")
     surplus_counts = fields.IntField(description="剩余次数")
     expire_time = fields.DatetimeField(description="到期时间")
     amount = fields.IntField(description="订单金额")
