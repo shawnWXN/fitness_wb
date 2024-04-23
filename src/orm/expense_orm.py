@@ -85,6 +85,6 @@ async def find_expenses(request) -> dict:
         order_cnt_dict = await ExpenseModel.count_via_group_by(query, 'order_no')
         order_avg_dict: typing.Dict[str, Decimal] = await order_amount_avg()
         order_total_amount = sum([order_avg_dict.get(k) * Decimal(v) for k, v in order_cnt_dict.items()])
-        order_total_amount = float(order_total_amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))  # noqa
+        order_total_amount = float(order_total_amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)) if order_total_amount else 0
         pagination['expense_amount'] = order_total_amount
     return pagination
