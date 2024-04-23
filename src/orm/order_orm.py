@@ -3,10 +3,12 @@ import typing
 from decimal import Decimal
 from datetime import datetime, timedelta
 
+from tortoise.functions import Sum
 from tortoise.queryset import Q
 
 from api import paging
 from common.const import CONST
+from infra.utils import page_num_size
 from orm.course_orm import pk_thumbnail_map
 from orm.model import OrderModel, UserModel
 
@@ -83,7 +85,13 @@ async def find_orders(request) -> dict:
     if create_date_end:
         query = query.filter(create_time__lt=(create_date_end + timedelta(days=1)).strftime(date_format))  # 要加一天
 
-    return await paging(request, query)
+    pagination = await paging(request, query)
+    page_num, _ = page_num_size(request)
+    if page_num == 1:
+        total_amount_result = await query.annotate(total_amount=Sum('amount')).values('total_amount')
+        total_amount = (total_amount_result[0].get('total_amount') or 0) if total_amount_result else 0
+        pagination['amount'] = total_amount
+    return pagination
 
 
 async def order_amount_avg() -> typing.Dict[str, Decimal]:
