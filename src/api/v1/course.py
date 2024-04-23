@@ -35,7 +35,6 @@ class Course(HTTPMethodView):
 
         await prepare_data(data)
 
-        # 判断教练ID真实性
         exists_course: CourseModel = await CourseModel.get_or_none(name=data[CONST.NAME])
         if exists_course:
             return resp_failure(400, f"课程名[{exists_course.name}]已经存在了")

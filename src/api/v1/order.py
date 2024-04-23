@@ -51,7 +51,7 @@ class Order(HTTPMethodView):
         data[CONST.MEMBER_PHONE] = member.phone
         # 根据课程ID，找到课程相关信息
         course: CourseModel = await CourseModel.get_one(id=data[CONST.COURSE_ID])
-        data[CONST.BILL_TYPE] = course.bill_type
+        data[CONST.BILL_TYPE] = course.bill_type  # TODO 计费类型一经确定不可再改，需要找DBA
         data[CONST.COURSE_NAME] = course.name
         # 有效次数，默认跟有效次数相同 FIXME 此处一般不准，需要去订单管理页，修改真实的有效次数。
         data[CONST.LIMIT_COUNTS] = course.limit_counts
@@ -80,9 +80,9 @@ class Order(HTTPMethodView):
 
         course_id = data.get(CONST.COURSE_ID)
         if course_id and course_id != order.course_id:
-            # 有课程ID，将更新订单的课程ID、课程名、计费类型 这三个。
+            # 有课程ID，将更新订单的课程ID、课程名
             course: CourseModel = await CourseModel.get_one(id=course_id)
-            data[CONST.BILL_TYPE] = course.bill_type
+            # data[CONST.BILL_TYPE] = course.bill_type
             data[CONST.COURSE_NAME] = course.name
 
         expire_time = data.get(CONST.EXPIRE_TIME)
@@ -126,10 +126,10 @@ class OrderComment(HTTPMethodView):
 
         data[CONST.ID] = order.id
         data[CONST.COMMENTS] = order.comments or []
-        data[CONST.COMMENTS].append(f"({now_dt_str}){user.nickname}: {this_comment}")
+        data[CONST.COMMENTS].append(f"({now_dt_str}){user.name_zh or user.nickname}: {this_comment}")
         await OrderModel.update_one(data)
 
         member_data = {CONST.ID: member.id, CONST.COMMENTS: member.comments}
-        member_data.setdefault(CONST.COMMENTS, []).append(f"({now_dt_str}){user.nickname}#{order.id}: {this_comment}")
+        member_data.setdefault(CONST.COMMENTS, []).append(f"({now_dt_str}){user.name_zh or user.nickname}#{order.id}: {this_comment}")
         await UserModel.update_one(member_data)
         return resp_success()

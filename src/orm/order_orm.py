@@ -1,4 +1,6 @@
 import re
+import typing
+from decimal import Decimal
 from datetime import datetime, timedelta
 
 from tortoise.queryset import Q
@@ -82,3 +84,10 @@ async def find_orders(request) -> dict:
         query = query.filter(create_time__lt=(create_date_end + timedelta(days=1)).strftime(date_format))  # 要加一天
 
     return await paging(request, query)
+
+
+async def order_amount_avg() -> typing.Dict[str, Decimal]:
+    orders: typing.List[dict] = await OrderModel.all().values('order_no', 'limit_counts', 'amount')
+
+    return {order.get('order_no'): Decimal(order.get('amount') / order.get('limit_counts')) if order.get(
+        'limit_counts') else Decimal(0) for order in orders}

@@ -3,27 +3,14 @@ from functools import wraps
 from sanic.request import Request
 from tortoise.queryset import QuerySet
 
-from common.const import CONST
-from infra.utils import resp_failure
+from infra.utils import resp_failure, page_num_size
 
 
 async def paging(request: Request, query: QuerySet, order_by: tuple = ('-id',)) -> dict:
-    page_size = request.args.get(CONST.PAGE_SIZE)
-    page_num = request.args.get(CONST.PAGE_NUM)
-    if page_size and page_size.isdigit():
-        page_size = int(page_size)
-        page_size = page_size if page_size <= 100 else 100
-    else:
-        page_size = 10
-
-    if page_num and page_num.isdigit():
-        page_num = int(page_num) or 1
-    else:
-        page_num = 1
+    page_num, page_size = page_num_size(request)
 
     count = await query.count()
-    objs = await query.order_by(*order_by).offset(page_size * (page_num - 1)).limit(
-        page_size)
+    objs = await query.order_by(*order_by).offset(page_size * (page_num - 1)).limit(page_size)
     items = [obj.to_dict() for obj in objs]
     return {
         'total': count,

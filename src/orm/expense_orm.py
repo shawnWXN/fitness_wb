@@ -1,12 +1,15 @@
 import re
+import typing
+from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timedelta
-
 from tortoise.expressions import Q
 
 from api import paging
 from common.const import CONST
 from common.enum import StaffRoleEnum
+from infra.utils import page_num_size
 from orm.model import ExpenseModel, UserModel
+from orm.order_orm import order_amount_avg
 
 
 async def my_expenses(request) -> dict:
@@ -76,4 +79,12 @@ async def find_expenses(request) -> dict:
     if create_date_end:
         query = query.filter(create_time__lt=(create_date_end + timedelta(days=1)).strftime(date_format))  # 要加一天
 
-    return await paging(request, query)
+    pagination = await paging(request, query)
+    page_num, _ = page_num_size(request)
+    if page_num == 1:
+        order_cnt_dict = await ExpenseModel.count_via_group_by(query, 'order_no')
+        order_avg_dict: typing.Dict[str, Decimal] = await order_amount_avg()
+        order_total_amount = sum([order_avg_dict.get(k) * Decimal(v) for k, v in order_cnt_dict.items()])
+        order_total_amount = float(order_total_amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))  # noqa
+        pagination['expense_amount'] = order_total_amount
+    return pagination

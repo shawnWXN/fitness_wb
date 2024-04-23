@@ -11,6 +11,7 @@ from PIL import Image
 import qrcode
 import requests
 from sanic.response import json as sanic_json
+from sanic.request import Request
 
 from common.const import CONST
 from loggers.logger import logger
@@ -37,6 +38,23 @@ def resp_failure(status_code, reason, resp_data: dict = None, print_log: bool = 
     if print_log:
         logger.error(f'{result}, {status_code}')
     return sanic_json(result, status=status_code)
+
+
+def page_num_size(request: Request):
+    page_size = request.args.get(CONST.PAGE_SIZE)
+    if page_size and page_size.isdigit():
+        page_size = int(page_size)
+        page_size = page_size if page_size <= 100 else 100
+    else:
+        page_size = 10
+
+    page_num = request.args.get(CONST.PAGE_NUM)
+    if page_num and page_num.isdigit():
+        page_num = int(page_num) or 1
+    else:
+        page_num = 1
+
+    return page_num, page_size
 
 
 def snake2camel(snake: str, start_lower: bool = False) -> str:
