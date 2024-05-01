@@ -3,7 +3,6 @@ import inspect
 import pkgutil
 import re
 
-import pyfiglet
 from sanic import Sanic
 from sanic.handlers import ErrorHandler
 from sanic.request import Request
