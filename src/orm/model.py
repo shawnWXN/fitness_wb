@@ -116,7 +116,7 @@ class OrderModel(BaseModel):
     surplus_counts = fields.IntField(description="剩余次数")
     expire_time = fields.DatetimeField(description="到期时间")
     amount = fields.IntField(description="订单金额")
-    receipt = fields.CharField(max_length=255, description="付款截图")
+    receipt = fields.CharField(null=True, max_length=255, description="付款截图")
     contract = fields.CharField(null=True, max_length=255, description="合同文件")
     status = fields.CharEnumField(OrderStatusEnum, description="订单状态", default=OrderStatusEnum.ACTIVATED.value)
     order_no = fields.CharField(unique=True, max_length=255, description="订单编号", default=lambda: shortuuid.uuid())
