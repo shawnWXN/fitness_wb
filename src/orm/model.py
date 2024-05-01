@@ -138,3 +138,15 @@ class ExpenseModel(BaseModel):
                                   default=ExpenseStatusEnum.PENDING.value)
     order_no = fields.CharField(max_length=255, description="订单编号")
     # comments = fields.JSONField(description="备注", default=[])
+
+
+class SigninModel(BaseModel):
+    class Meta:
+        table = "signin"
+        unique_together = [("member_id", "record_date")]
+
+    record_date = fields.DateField(description="签到日期")
+    member_id = fields.IntField(description="会员编号ID")
+    member_name = fields.CharField(null=True, max_length=255, description="会员名")
+    coach_id = fields.IntField(null=True, description="教练编号ID")
+    coach_name = fields.CharField(null=True, max_length=255, description="教练名")

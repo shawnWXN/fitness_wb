@@ -167,7 +167,7 @@ order_create_schema = {
         "member_id",
         "course_id",
         "amount",
-        "receipt",
+        # "receipt",
     ]
 }
 

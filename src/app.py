@@ -61,15 +61,15 @@ async def _before_request(request: Request):
     if not user:
         user = UserModel(id=-1, openid=openid)
     user_info = f", user[name={user.nickname or user.name_zh or user.openid},role={user.staff_roles}], args:"
-    # if request.method.upper() != 'GET':
-    logger.info(log_msg.replace(", args:", user_info))
+    if request.method.upper() != 'GET':
+        logger.info(log_msg.replace(", args:", user_info))
     request.ctx.user = user
 
 
 # 定义响应中间件
 @app.middleware("response")
 async def _custom_header(request: Request, response):
-    response.headers["Sanic-App-Version"] = "04232344"
+    response.headers["Sanic-App-Version"] = "05011703"
 
 
 @app.listener("before_server_start")
@@ -92,12 +92,14 @@ def register_routes(module_name, prefix=""):
         else:
             for _, obj in inspect.getmembers(importlib.import_module(sub_name)):
                 if inspect.isclass(obj) and issubclass(obj, HTTPMethodView) and obj != HTTPMethodView:
+                    methods = inspect.getmembers(obj, predicate=inspect.isfunction)
+                    support_method = '| '.join(tup[0].upper() for tup in methods if tup[0] != 'dispatch_request')
                     app.add_route(obj.as_view(), f'{CONST.URL_PREFIX}/{prefix}/{camel2snake(_)}')
-                    logger.info(f"endpoint: {CONST.URL_PREFIX}/{prefix}/{camel2snake(_)}")
+                    logger.info(f"routes: {CONST.URL_PREFIX}/{prefix}/{camel2snake(_)}, [{support_method}]")
 
 
 def run_web_service():
-    logger.info("\n" + pyfiglet.Figlet(width=200).renderText(app.name))
+    logger.info(f"Sanic App {CONST.SYSTEM_APP_NAME} Starting... mode is {'DEV' if SETTING.DEV else 'PRODUCTION'}")
     options = {
         "DEBUG": False,
         "ACCESS_LOG": False,
@@ -135,7 +137,6 @@ def run_web_service():
         'timezone': 'Asia/Shanghai'  # 默认是UTC
     }
     register_tortoise(app, config=tortoise_config)
-    logger.warning("SERVER IS DEV MODE.") if SETTING.DEV else logger.warning("SERVER IS PRODUCTION MODE.")
 
 
 run_web_service()

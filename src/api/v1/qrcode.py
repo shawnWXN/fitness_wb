@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 import pytz
 from sanic.views import HTTPMethodView
@@ -6,12 +6,8 @@ from sanic.views import HTTPMethodView
 from api import check_staff, check_authorize
 from common.enum import StaffRoleEnum, ScanSceneEnum, OrderStatusEnum, BillTypeEnum
 from infra.utils import resp_failure, resp_success, str2base64
-from orm.model import OrderModel, UserModel, ExpenseModel
+from orm.model import OrderModel, UserModel, ExpenseModel, SigninModel
 from service.validate_service import validate_qrcode_create_data
-
-
-# qrcode_storage = {}  # qrcode_str -> ts
-# qrcode_expire_ts = 5 * 60
 
 
 class Qrcode(HTTPMethodView):
@@ -41,9 +37,6 @@ class Qrcode(HTTPMethodView):
             member: UserModel = await UserModel.get_one(openid=_id)
             assert member.id == request.ctx.user.id, f"OrderModel[{_id}] no access for user[{request.ctx.user.id}]"
 
-        # logger.info(f"start {qrcode_str} -> {time.time_ns()}")
-        # qrcode_storage[qrcode_str] = time.time_ns()
-        # logger.info(f"now qrcode_storage {qrcode_storage}")
         return resp_success(qrcode=str2base64(qrcode_str))
 
     @staticmethod
@@ -57,13 +50,6 @@ class Qrcode(HTTPMethodView):
         scene_uuid: str = (request.json or dict()).get('scene_uuid')
         if not scene_uuid:
             return resp_failure(400, "缺少必要参数")
-
-        # 判断有无过期
-        # logger.info(f"now qrcode_storage {qrcode_storage}")
-        # ts: typing.Optional[float, None] = qrcode_storage.pop(scene_uuid, None)
-        # logger.info(f"pop qrcode_storage get {ts}")
-        # if not ts or (ts + qrcode_expire_ts * pow(10, 9)) < time.time_ns():
-        #     return resp_failure(500, "二维码已失效")
 
         sc, _id = scene_uuid.split('#', maxsplit=1)
         if sc == ScanSceneEnum.EXPENSE.value:
@@ -95,4 +81,11 @@ class Qrcode(HTTPMethodView):
             return resp_success(scene=sc, id=expense.id)
         else:  # 签到
             member: UserModel = await UserModel.get_one(openid=_id)
+            record_date = date.today()
+            signin, do_create = await SigninModel.get_or_create(member_id=member.id, record_date=record_date)
+            if do_create:
+                signin.member_name = member.name_zh or member.nickname
+                signin.coach_id = request.ctx.user.id
+                signin.coach_name = request.ctx.user.nickname or request.ctx.user.name_zh
+                await signin.save()
             return resp_success(scene=sc, data=member.to_dict())
