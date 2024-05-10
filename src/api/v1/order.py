@@ -86,11 +86,12 @@ class Order(HTTPMethodView):
             data[CONST.COURSE_NAME] = course.name
 
         expire_time = data.get(CONST.EXPIRE_TIME)
-        if expire_time and get_date_time_by_str(expire_time + ' 00:00:00') > datetime.now():
-            data[CONST.EXPIRE_TIME] = get_date_time_by_str(expire_time + ' 00:00:00')
-        else:
-            # data.pop(CONST.EXPIRE_TIME, None)  # 不能将到期时间改到过去
-            return resp_failure(400, "过期时间不能是过去")
+        if expire_time:
+            if get_date_time_by_str(expire_time + ' 00:00:00') > datetime.now():
+                data[CONST.EXPIRE_TIME] = get_date_time_by_str(expire_time + ' 00:00:00')
+            else:
+                # data.pop(CONST.EXPIRE_TIME, None)  # 不能将到期时间改到过去
+                return resp_failure(400, "过期时间不能是过去")
 
         limit_counts = data.get(CONST.LIMIT_COUNTS) or order.limit_counts
         surplus_counts = data.get(CONST.SURPLUS_COUNTS) or order.surplus_counts
@@ -130,6 +131,7 @@ class OrderComment(HTTPMethodView):
         await OrderModel.update_one(data)
 
         member_data = {CONST.ID: member.id, CONST.COMMENTS: member.comments}
-        member_data.setdefault(CONST.COMMENTS, []).append(f"({now_dt_str}){user.name_zh or user.nickname}#{order.id}: {this_comment}")
+        member_data.setdefault(CONST.COMMENTS, []).append(
+            f"({now_dt_str}){user.name_zh or user.nickname}#{order.id}: {this_comment}")
         await UserModel.update_one(member_data)
         return resp_success()
