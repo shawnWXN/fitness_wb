@@ -18,4 +18,4 @@ COPY ./src /app
 
 EXPOSE 28085
 
-CMD ["sanic", "app", "--host", "0.0.0.0", "--port", "28085", "--fast"]
+CMD ["sanic", "app", "--host", "0.0.0.0", "--port", "28085", "--single-process"]
