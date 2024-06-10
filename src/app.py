@@ -10,7 +10,7 @@ from sanic.views import HTTPMethodView
 from tortoise.contrib.sanic import register_tortoise
 
 from common.const import CONST
-from infra.utils import resp_failure, camel2snake, get_openid
+from infra.utils import resp_failure, camel2snake, get_openid, LimiterExceedError
 from loggers.logger import logger
 from orm.model import UserModel
 from scheduler.core import aps
@@ -31,6 +31,9 @@ class _GlobalErrorHandler(ErrorHandler):
                 return resp_failure(404, "记录不存在")
             if "no access" in exc.args[-1]:
                 return resp_failure(403, "您的权限不足以操作")
+        if isinstance(exc, LimiterExceedError):
+            return resp_failure(429, exc.args[-1])
+
         # You custom error handling logic...
         # return super().default(request, exc)
         return resp_failure(500, "哦豁，服务器开小差了~")

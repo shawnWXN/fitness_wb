@@ -3,7 +3,7 @@ from sanic.views import HTTPMethodView
 from api import check_staff, check_authorize
 from common.const import CONST
 from common.enum import StaffRoleEnum, BillTypeEnum
-from infra.utils import resp_failure, resp_success, days_bill_description
+from infra.utils import resp_failure, resp_success, days_bill_description, limiter_deco, get_openid
 from orm.course_orm import find_courses
 from orm.model import CourseModel
 from service.validate_service import validate_course_create_data, validate_course_update_data
@@ -21,6 +21,7 @@ class Course(HTTPMethodView):
         return resp_success(await find_courses(request))
 
     @staticmethod
+    @limiter_deco(get_openid)
     @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
     async def post(request):
         """

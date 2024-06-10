@@ -17,7 +17,9 @@ def get_logger_file_name(prefix=""):
 
 
 def get_logger_format() -> str:
-    fmt = '[%(levelname)s]'
+    fmt = '[%(asctime)s]-' if SETTING.DEV else ''
+    fmt += '[%(process)d]'
+    fmt += '-[%(levelname)s]'
     fmt += '-[%(thread)d]'
     fmt += '-[%(filename)s:%(lineno)s]'
     fmt += ' # %(message)s'

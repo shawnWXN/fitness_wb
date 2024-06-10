@@ -223,20 +223,20 @@ def get_module_func(func: typing.Callable = None):
     return f'{current_module_name}:{line_no}:{current_function_name}'
 
 
-class TokenBucketExceedError(Exception):
+class LimiterExceedError(Exception):
     pass
 
 
 token_buckets = {}  # 使用字典作为内存存储
 
 
-def token_bucket_limiter(openid, seconds: float = 1.5, capacity: int = 1,
-                         exceed_handle: typing.Any = TokenBucketExceedError("Too many requests, please try again.")):
+def limiter_deco(identifier_func: typing.Callable, seconds: float = 2, capacity: int = 1,
+                 exceed_handle: typing.Any = LimiterExceedError("Too many requests, please try again.")):
     def decorator(func):
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(request: Request, *args, **kwargs):
             current_time = time.time()
-            key = openid + '@' + get_module_func(func)
+            key = identifier_func(request) + '@' + get_module_func(func)
 
             # 移除seconds秒前的请求记录
             if key in token_buckets:
@@ -245,7 +245,7 @@ def token_bucket_limiter(openid, seconds: float = 1.5, capacity: int = 1,
             # 检查当前是否超过请求数量限制
             if len(token_buckets.get(key, [])) < capacity:
                 token_buckets.setdefault(key, []).append(current_time)
-                return func(*args, **kwargs)
+                return func(request, *args, **kwargs)
             else:
                 if callable(exceed_handle):
                     return exceed_handle()
