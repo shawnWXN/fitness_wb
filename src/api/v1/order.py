@@ -6,7 +6,7 @@ from api import check_staff
 from common.const import CONST
 from common.enum import StaffRoleEnum, OrderStatusEnum
 from infra.date_utils import get_datetime_zero, get_date_time_by_str
-from infra.utils import resp_failure, resp_success
+from infra.utils import resp_failure, resp_success, limiter_deco, get_openid
 from orm.model import CourseModel, OrderModel, UserModel
 from orm.order_orm import find_orders
 from service.validate_service import validate_order_create_data, validate_order_comment_create_data, \
@@ -30,6 +30,7 @@ class Order(HTTPMethodView):
 
     @staticmethod
     @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
+    @limiter_deco(get_openid)
     async def post(request):
         """
         开通会员
@@ -105,6 +106,7 @@ class Order(HTTPMethodView):
 class OrderComment(HTTPMethodView):
     @staticmethod
     @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
+    @limiter_deco(get_openid)
     async def post(request):
         """
         新增订单备注（也会加一条用户备注）

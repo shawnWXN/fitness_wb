@@ -32,7 +32,7 @@ class _GlobalErrorHandler(ErrorHandler):
             if "no access" in exc.args[-1]:
                 return resp_failure(403, "您的权限不足以操作")
         if isinstance(exc, LimiterExceedError):
-            return resp_failure(429, exc.args[-1])
+            return resp_failure(429, "操作太快啦，慢一点~")
 
         # You custom error handling logic...
         # return super().default(request, exc)
@@ -71,7 +71,7 @@ async def _before_request(request: Request):
 # 定义响应中间件
 @app.middleware("response")
 async def _custom_header(request: Request, response):
-    response.headers["Sanic-App-Version"] = "05101205"
+    response.headers["Sanic-App-Version"] = "06102242"
 
 
 @app.listener("before_server_start")

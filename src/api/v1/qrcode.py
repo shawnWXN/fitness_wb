@@ -5,7 +5,7 @@ from sanic.views import HTTPMethodView
 
 from api import check_staff, check_authorize
 from common.enum import StaffRoleEnum, ScanSceneEnum, OrderStatusEnum, BillTypeEnum
-from infra.utils import resp_failure, resp_success, str2base64
+from infra.utils import resp_failure, resp_success, str2base64, limiter_deco, get_openid
 from orm.model import OrderModel, UserModel, ExpenseModel, SigninModel
 from service.validate_service import validate_qrcode_create_data
 
@@ -14,6 +14,7 @@ class Qrcode(HTTPMethodView):
 
     @staticmethod
     @check_authorize(exclude_staff=True)
+    @limiter_deco(get_openid)
     async def post(request):
         """
         会员调用。根据场景，生成二维码

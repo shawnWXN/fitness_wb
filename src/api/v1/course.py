@@ -11,7 +11,6 @@ from service.validate_service import validate_course_create_data, validate_cours
 
 class Course(HTTPMethodView):
     @staticmethod
-    @limiter_deco(get_openid)
     async def get(request):
         """
         查看所有课程
@@ -23,6 +22,7 @@ class Course(HTTPMethodView):
 
     @staticmethod
     @check_staff([StaffRoleEnum.MASTER.value, StaffRoleEnum.ADMIN.value])
+    @limiter_deco(get_openid)
     async def post(request):
         """
         录入新的课程信息
