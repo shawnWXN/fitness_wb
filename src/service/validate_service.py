@@ -120,8 +120,8 @@ course_create_schema = {
         "limit_counts": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 1000,
-            "exclusiveMaximum": 1000,
+            "maximum": 10000,
+            "exclusiveMaximum": 10000,
             "title": "有效次数"
         }
     },
@@ -205,15 +205,15 @@ order_update_schema_part = {  # 订单更新schema片段
         "surplus_counts": {
             "type": ["integer", "null"],
             "minimum": 1,
-            "maximum": 1000,
-            "exclusiveMaximum": 1000,
+            "maximum": 10000,
+            "exclusiveMaximum": 10000,
             "title": "剩余次数"
         },
         "limit_counts": {
             "type": ["integer", "null"],
             "minimum": 1,
-            "maximum": 1000,
-            "exclusiveMaximum": 1000,
+            "maximum": 10000,
+            "exclusiveMaximum": 10000,
             "title": "有效次数"
         },
         "expire_time": {

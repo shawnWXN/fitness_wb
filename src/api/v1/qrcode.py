@@ -52,6 +52,9 @@ class Qrcode(HTTPMethodView):
         if not scene_uuid:
             return resp_failure(400, "缺少必要参数")
 
+        if not any([scene_uuid.startswith(_ + '#') for _ in (ScanSceneEnum.EXPENSE.value, ScanSceneEnum.SIGNIN.value)]):
+            return resp_failure(400, "不支持的二维码")
+
         sc, _id = scene_uuid.split('#', maxsplit=1)
         if sc == ScanSceneEnum.EXPENSE.value:
             order: OrderModel = await OrderModel.get_one(order_no=_id)
