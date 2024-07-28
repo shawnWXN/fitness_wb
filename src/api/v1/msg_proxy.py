@@ -1,9 +1,11 @@
+from sanic.views import HTTPMethodView
+
 from api import check_authorize
 from infra.utils import resp_success
 from service.wx_openapi import send_api
 
 
-class MsgProxy(object):
+class MsgProxy(HTTPMethodView):
 
     @staticmethod
     @check_authorize()
