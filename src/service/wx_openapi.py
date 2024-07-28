@@ -1,6 +1,7 @@
 import requests
 
 from infra.utils import requests_retry
+from loggers.logger import logger
 
 
 def phone_via_code(code: str) -> str:
@@ -73,8 +74,8 @@ def send_api(openid, template_id):
     try:
         response: requests.Response = requests_retry('post', url, json=payload)
         response.raise_for_status()  # Raise an error for bad responses
-        print(f'send_api, Response[{response.status_code}] -> {response.text}')
+        logger.info(f'send_api, Response[{response.status_code}] -> {response.text}')
         return response.json()  # Return the JSON response
     except requests.exceptions.RequestException as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
         return None
