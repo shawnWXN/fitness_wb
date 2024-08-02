@@ -27,6 +27,11 @@ userprofile_update_schema = {
             "type": ["string", "null"],
             "title": "头像",
             "minLength": 1
+        },
+        "subscribe_incr": {
+            "type": "integer",
+            "title": "订阅消息增量",
+            "minimum": 1
         }
     },
     "minProperties": 1

@@ -71,7 +71,7 @@ async def _before_request(request: Request):
 # 定义响应中间件
 @app.middleware("response")
 async def _custom_header(request: Request, response):
-    response.headers["Sanic-App-Version"] = "06102242"
+    response.headers["Sanic-App-Version"] = "08022139"
 
 
 @app.listener("before_server_start")
@@ -101,7 +101,7 @@ def register_routes(module_name, prefix=""):
 
 
 def run_web_service():
-    logger.info(f"Sanic App {CONST.SYSTEM_APP_NAME} Starting... mode is {'DEV' if SETTING.DEV else 'PRODUCTION'}")
+    logger.warning(f"Sanic App {CONST.SYSTEM_APP_NAME} Starting... mode is {'DEV' if SETTING.DEV else 'PRODUCTION'}")
     options = {
         "DEBUG": False,
         "ACCESS_LOG": False,

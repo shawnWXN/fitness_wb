@@ -139,6 +139,8 @@ class _Const(object):
 
     NAME = 'name'
     NAME_ZH = 'name_zh'
+    SUBSCRIBE_COUNTS = 'subscribe_counts'
+    SUBSCRIBE_INCR = 'subscribe_incr'
     BRAND = 'brand'
     PUBLIC = 'public'
     PRIVATE = 'private'

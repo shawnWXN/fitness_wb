@@ -65,7 +65,7 @@ class UserProfile(HTTPMethodView):
     @staticmethod
     async def put(request):
         """
-        更新profile：手机，昵称，头像
+        更新profile：手机，昵称，头像，订阅消息增量
         :param request:
         :return:
         """
@@ -79,6 +79,7 @@ class UserProfile(HTTPMethodView):
             db_user = user.to_dict()
             logger.info(f"create user {(db_user.update(data), db_user)[1]}")
         data.update({CONST.ID: user.id})
+        data[CONST.SUBSCRIBE_COUNTS] = user.subscribe_counts + data.get(CONST.SUBSCRIBE_INCR, 0)
         await UserModel.update_one(data)
         return resp_success()
 

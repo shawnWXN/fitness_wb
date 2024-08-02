@@ -77,6 +77,7 @@ class UserModel(BaseModel):
     name_zh = fields.CharField(max_length=50, null=True, description="中文姓名")
     # gender = fields.CharEnumField(enum_type=GenderEnum, description="性别", max_length=1, null=True)
     avatar = fields.CharField(max_length=255, null=True, description="头像")
+    subscribe_counts = fields.IntField(description="订阅消息次数", default=0)
     staff_roles = fields.JSONField(description="账号权限列表", default=[])
     comments = fields.JSONField(description="备注", default=[])
 
