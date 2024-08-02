@@ -49,6 +49,27 @@ def send_api(openid, template_id):
                 },
             },
         }
+    elif template_id == 'cTHgr4883_S3klu9U74vuvoxwKY9d_np6hq9A0BUyFc':
+        payload = {
+            "touser": openid,
+            "template_id": template_id,
+            "page": 'projects/workfit/pages/my/course/my_course',
+            "miniprogram_state": "developer",
+            "data": {
+                "phrase1": {
+                    "value": "三天后到期"
+                },
+                "thing2": {
+                    "value": "自寻月卡"
+                },
+                "time3": {
+                    "value": "2024年8月26日 21:48"
+                },
+                "character_string4": {
+                    "value": 'bFGP8SL7bqZtix9dkj9X4y'
+                }
+            },
+        }
     # i7Ib4M_rAMJ8NABZUqO1Y8Oqqm71NLzrOzAZXypMajA
     else:
         payload = {
