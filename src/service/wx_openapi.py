@@ -1,5 +1,6 @@
 import requests
 
+from common.const import CONST
 from infra.utils import requests_retry
 from loggers.logger import logger
 
@@ -29,74 +30,60 @@ def phone_via_code(code: str) -> str:
     return resp_dict.get('phone_info', {}).get('phoneNumber')
 
 
-def send_api(openid, template_id):
-    url = "http://api.weixin.qq.com/cgi-bin/message/subscribe/send"
-
-    if template_id == 'ErC-bxEn78ABZRpHb_oDhobYc7yOVBEaj7MJBK5akLk':
-        payload = {
-            "touser": openid,
-            "template_id": template_id,
-            "miniprogram_state": "developer",
-            "data": {
-                "thing1": {
-                    "value": "三个月包时卡",
-                },
-                "time3": {
-                    "value": "2022年4月26日 21:48",
-                },
-                "time2": {
-                    "value": "2024年8月26日 21:48",
-                },
+def subscribe_send(openid: str, template_id: str, template_data: dict) -> bool:
+    """
+    reference: https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/mp-message-management/subscribe-message/sendMessage.html
+    """
+    payload = {
+        "touser": openid,
+        "template_id": template_id,
+        "data": template_data,
+    }
+    if template_id == CONST.ORDER_STATUS_TEMPLATE:
+        """Example
+        payload['data'] = {
+            "phrase1": {
+                "value": "三天后到期"
             },
-        }
-    elif template_id == 'cTHgr4883_S3klu9U74vuvoxwKY9d_np6hq9A0BUyFc':
-        payload = {
-            "touser": openid,
-            "template_id": template_id,
-            "page": 'projects/workfit/pages/my/course/my_course',
-            "miniprogram_state": "developer",
-            "data": {
-                "phrase1": {
-                    "value": "三天后到期"
-                },
-                "thing2": {
-                    "value": "自寻月卡"
-                },
-                "time3": {
-                    "value": "2024年8月26日 21:48"
-                },
-                "character_string4": {
-                    "value": 'bFGP8SL7bqZtix9dkj9X4y'
-                }
+            "thing2": {
+                "value": "自寻月卡"
             },
-        }
-    # i7Ib4M_rAMJ8NABZUqO1Y8Oqqm71NLzrOzAZXypMajA
+            "time3": {
+                "value": "2024年8月26日 21:48"
+            },
+            "character_string4": {
+                "value": 'bFGP8SL7bqZtix9dkj9X4y'
+            }
+        }"""
+        payload['page'] = 'projects/workfit/pages/my/course/my_course'
     else:
-        payload = {
-            "touser": openid,
-            "template_id": template_id,
-            "miniprogram_state": "developer",
-            "data": {
-                "thing1": {
-                    "value": "套餐类型1",
-                },
-                "number3": {
-                    "value": 52,
-                },
-                "number2": {
-                    "value": 3
-                },
-                "thing5": {
-                    "value": "这是一个提醒"
-                }
-            },
-        }
+        logger.error(f'Unsupported subscribe template {template_id}')
+        return False
 
-    try:
-        response: requests.Response = requests_retry('post', url, json=payload)
-        response.raise_for_status()  # Raise an error for bad responses
-        logger.info(f'send_api, Response[{response.status_code}] -> {response.text}')
-        return response.json()  # Return the JSON response
-    except requests.exceptions.RequestException as e:
-        logger.error(f"An error occurred: {e}")
-        return None
+    # FIXME mock
+    # r = random.randint(0, 2)
+    # if not r:
+    #     response = requests.Response()
+    #     response.status_code = 200
+    #     response.headers = {'Content-Type': 'application/json'}
+    #     response._content = json.dumps({'errcode': 0, 'errmsg': 'ok'}).encode()
+    # elif r == 1:
+    #     response = requests.Response()
+    #     response.status_code = 200
+    #     response.headers = {'Content-Type': 'application/json'}
+    #     response._content = json.dumps({'errcode': 43101, 'errmsg': 'ok'}).encode()
+    # else:
+    #     response = requests.Response()
+    #     response.status_code = 500
+    #     response.headers = {'Content-Type': 'application/json'}
+    #     response._content = json.dumps({'errcode': 0, 'errmsg': 'ok'}).encode()
+
+    response: requests.Response = requests_retry(
+        'post', 'http://api.weixin.qq.com/cgi-bin/message/subscribe/send', json=payload
+    )
+
+    response.raise_for_status()
+    errcode = response.json().get('errcode', -1)
+    assert errcode in (0, 43101), (f'template={template_id} to {openid} failed, '
+                                   f'Response[{response.status_code}] -> {response.text}')
+    return False if errcode else True  # 为零发送成功，非零则是用户拒绝订阅消息

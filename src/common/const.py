@@ -113,6 +113,7 @@ class _Const(object):
     COMMENTS = 'comments'
     COMMENT = 'comment'
     ORDER_NO = 'order_no'
+    NOTIFIED = 'notified'
 
     ROLE = "role"
 
@@ -164,6 +165,8 @@ class _Const(object):
     U_ID = 'u_id'
     CONTENT = 'content'
     JOURNAL = 'journal'
+
+    ORDER_STATUS_TEMPLATE = 'cTHgr4883_S3klu9U74vuvoxwKY9d_np6hq9A0BUyFc'
 
 
 CONST = _Const()

@@ -121,6 +121,7 @@ class OrderModel(BaseModel):
     contract = fields.CharField(null=True, max_length=255, description="合同文件")
     status = fields.CharEnumField(OrderStatusEnum, description="订单状态", default=OrderStatusEnum.ACTIVATED.value)
     order_no = fields.CharField(unique=True, max_length=255, description="订单编号", default=lambda: shortuuid.uuid())
+    notified = fields.CharField(max_length=255, description="有无提醒到期", default=CONST.FALSE_STATUS)
     comments = fields.JSONField(description="备注", default=[])
 
 

@@ -1,3 +1,4 @@
+import typing
 from functools import reduce
 
 from tortoise.expressions import RawSQL
@@ -110,3 +111,8 @@ async def update_user(request):
             # 核销表没存教练的手机号
             logger.info(f"phone: {user.phone}, {phone}, "
                         f"cascade update: {modified_order_cnt} order / {modified_expense_cnt} expense")
+
+
+async def identifier_user_map(identifier: str = 'id') -> typing.Dict[str, UserModel]:
+    users = await UserModel.all()
+    return {getattr(user, identifier): user for user in users}
